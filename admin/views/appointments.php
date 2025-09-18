@@ -1399,10 +1399,10 @@ $doctors = get_users(array('role__in' => array('clinica_doctor', 'clinica_manage
             <div class="transfer-form">
                 <h3><?php _e('Selectează noul doctor', 'clinica'); ?></h3>
                 <div class="form-group">
-                    <label for="transfer-doctor-select"><?php _e('Doctor nou', 'clinica'); ?> <span class="required">*</span></label>
-                    <select id="transfer-doctor-select" required>
-                        <option value=""><?php _e('Selectează doctor...', 'clinica'); ?></option>
-                    </select>
+                    <label><?php _e('Doctor nou', 'clinica'); ?> <span class="required">*</span></label>
+                    <div id="transfer-doctors" class="doctors-grid">
+                        <!-- doctor buttons rendered here -->
+                    </div>
                 </div>
                 
                 <!-- Layout cu 2 coloane pentru calendar și sloturi -->
@@ -1600,29 +1600,48 @@ jQuery(document).ready(function($) {
     
     // Încarcă doctorii pentru serviciul selectat
     function loadTransferDoctors() {
-        $('#transfer-doctor-select').html('<option value=""><?php echo esc_js(__('Se încarcă...', 'clinica')); ?></option>');
+        var grid = $('#transfer-doctors');
+        grid.html('<div class="doctor-btn disabled">Se încarcă...</div>');
         
         $.post(ajaxurl, {
             action: 'clinica_get_doctors_for_service',
             service_id: transferData.serviceId,
             nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
         }, function(resp) {
-            $('#transfer-doctor-select').html('<option value=""><?php echo esc_js(__('Selectează doctor...', 'clinica')); ?></option>');
+            grid.empty();
             
-            if (resp && resp.success && Array.isArray(resp.data)) {
+            if (resp && resp.success && Array.isArray(resp.data) && resp.data.length > 0) {
                 resp.data.forEach(function(doctor) {
                     // Exclude doctorul curent
                     if (parseInt(doctor.id) !== parseInt(transferData.doctorId)) {
-                        $('#transfer-doctor-select').append($('<option/>').val(doctor.id).text(doctor.name));
+                        var btn = $('<div/>').addClass('doctor-btn').text(doctor.name).attr('data-doctor-id', doctor.id);
+                        btn.on('click', function() {
+                            $('.doctor-btn').removeClass('selected');
+                            $(this).addClass('selected');
+                            transferData.selectedDoctorId = doctor.id;
+                            
+                            // Încarcă calendarul și sloturile pentru noul doctor
+                            loadTransferAvailableDays(doctor.id, transferData.serviceId);
+                            if (transferData.date) {
+                                loadTransferSlots(doctor.id);
+                            }
+                            
+                            validateTransferForm();
+                        });
+                        grid.append(btn);
                     }
                 });
+                
+                // Selectează primul doctor automat
+                var firstBtn = grid.find('.doctor-btn').first();
+                if (firstBtn.length) {
+                    firstBtn.click();
+                }
+            } else {
+                grid.append('<div class="doctor-btn disabled">Nu există doctori disponibili</div>');
             }
-            
-            // Încarcă calendarul cu zilele disponibile pentru primul doctor (dacă există)
-            var firstDoctor = $('#transfer-doctor-select option:not(:first)').first();
-            if (firstDoctor.length) {
-                loadTransferAvailableDays(firstDoctor.val(), transferData.serviceId);
-            }
+        }).fail(function() {
+            grid.html('<div class="doctor-btn disabled">Eroare la încărcare</div>');
         });
     }
     
@@ -1632,35 +1651,17 @@ jQuery(document).ready(function($) {
         if (newDate) {
             transferData.date = newDate;
             // Resetează selecțiile
-            $('#transfer-doctor-select').val('').html('<option value=""><?php echo esc_js(__('Selectează doctor...', 'clinica')); ?></option>');
+            $('#transfer-doctors').html('');
             $('#transfer-slots').html('');
             $('#transfer-modal-confirm').prop('disabled', true);
             transferData.selectedSlot = '';
+            transferData.selectedDoctorId = '';
             // Reîncarcă doctorii pentru noua dată
             loadTransferDoctors();
         }
     });
     
-    // Când se schimbă doctorul, încarcă calendarul și sloturile disponibile
-    $('#transfer-doctor-select').on('change', function() {
-        var doctorId = $(this).val();
-        if (!doctorId) {
-            $('#transfer-slots').html('');
-            $('#transfer-modal-confirm').prop('disabled', true);
-            transferData.selectedSlot = '';
-            // Resetează calendarul
-            resetTransferCalendar();
-            return;
-        }
-        
-        // Încarcă calendarul cu zilele disponibile pentru noul doctor
-        loadTransferAvailableDays(doctorId, transferData.serviceId);
-        
-        // Încarcă sloturile pentru data curentă (dacă există)
-        if (transferData.date) {
-            loadTransferSlots(doctorId);
-        }
-    });
+    // Funcția de schimbare a doctorului este acum gestionată în loadTransferDoctors()
     
     // Încarcă zilele disponibile pentru doctorul selectat
     function loadTransferAvailableDays(doctorId, serviceId) {
@@ -1886,19 +1887,19 @@ jQuery(document).ready(function($) {
     // Validează formularul de mutare
     function validateTransferForm() {
         var date = $('#transfer-date-picker').val();
-        var doctor = $('#transfer-doctor-select').val();
+        var doctor = transferData.selectedDoctorId || '';
         var slot = transferData.selectedSlot || '';
         var isValid = date && doctor && slot;
         $('#transfer-modal-confirm').prop('disabled', !isValid);
     }
     
     // Validează la schimbarea câmpurilor
-    $('#transfer-date-picker, #transfer-doctor-select').on('change', validateTransferForm);
+    $('#transfer-date-picker').on('change', validateTransferForm);
     
     // Confirmă mutarea
     $('#transfer-modal-confirm').on('click', function() {
         var newDate = $('#transfer-date-picker').val();
-        var doctorId = $('#transfer-doctor-select').val();
+        var doctorId = transferData.selectedDoctorId || '';
         var slot = transferData.selectedSlot || '';
         var notes = $('#transfer-notes').val();
         var sendEmail = $('#transfer-send-email').is(':checked');
@@ -1960,12 +1961,13 @@ jQuery(document).ready(function($) {
         $('#clinica-transfer-modal').removeClass('is-visible').hide();
         // Resetează formularul
         $('#transfer-date-picker').val('');
-        $('#transfer-doctor-select').val('');
+        $('#transfer-doctors').html('');
         $('#transfer-slots').html('');
         $('#transfer-notes').val('');
         $('#transfer-send-email').prop('checked', true);
         $('#transfer-modal-confirm').prop('disabled', true);
         transferData.selectedSlot = '';
+        transferData.selectedDoctorId = '';
         // Resetează calendarul
         resetTransferCalendar();
     }
@@ -2462,6 +2464,60 @@ jQuery(document).ready(function($) {
 .transfer-left-column #transfer-calendar {
     min-height: 320px;
     max-height: 380px;
+}
+
+/* Stiluri pentru grid-ul de doctori */
+#transfer-doctors.doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#transfer-doctors .doctor-btn {
+    padding: 12px 16px;
+    text-align: center;
+    background: #fff;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+}
+
+#transfer-doctors .doctor-btn:hover:not(.disabled) {
+    background: #f0f8ff;
+    border-color: #0073aa;
+    color: #0073aa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 115, 170, 0.15);
+}
+
+#transfer-doctors .doctor-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f5f5f5;
+    color: #999;
+}
+
+#transfer-doctors .doctor-btn.selected {
+    background: #0073aa;
+    color: #fff;
+    border-color: #0073aa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
+}
+
+#transfer-doctors .doctor-btn.selected:hover {
+    background: #005a87;
+    border-color: #005a87;
+    box-shadow: 0 4px 12px rgba(0, 90, 135, 0.4);
 }
 
 /* Ajustări pentru sloturile în coloana dreaptă */
