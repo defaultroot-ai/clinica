@@ -2159,6 +2159,9 @@ class Clinica_Patient_Dashboard {
             }
             
             if (empty($type_value)) { $type_value = '-'; }
+            // Folosește durata din serviciu dacă există, altfel durata din programare
+            $display_duration = !empty($a->service_duration) ? (int) $a->service_duration : (isset($a->duration) ? (int) $a->duration : 0);
+            
             $appointments_array[] = array(
                 'id' => isset($a->id) ? (int) $a->id : (isset($a->ID) ? (int) $a->ID : 0),
                 'appointment_date' => isset($a->appointment_date) ? (string) $a->appointment_date : '',
@@ -2166,7 +2169,7 @@ class Clinica_Patient_Dashboard {
                 'status' => isset($a->status) ? $this->translate_status($a->status) : 'Programată',
                 'doctor_name' => isset($a->doctor_name) ? (string) $a->doctor_name : '',
                 'type' => $type_value,
-                'duration' => isset($a->duration) ? (int) $a->duration : 0,
+                'duration' => $display_duration,
                 'notes' => isset($a->notes) ? (string) $a->notes : ''
             );
         }
@@ -2433,7 +2436,8 @@ class Clinica_Patient_Dashboard {
 
         $query = "SELECT a.*, 
                          COALESCE(CONCAT(um1.meta_value, ' ', um2.meta_value), d.display_name) as doctor_name,
-                         s.name as service_name
+                         s.name as service_name,
+                         s.duration as service_duration
                   FROM $table_name a 
                   LEFT JOIN {$wpdb->users} d ON a.doctor_id = d.ID 
                   LEFT JOIN {$wpdb->usermeta} um1 ON d.ID = um1.user_id AND um1.meta_key = 'first_name'
@@ -2504,7 +2508,8 @@ class Clinica_Patient_Dashboard {
                             $date_raw = isset($appointment->appointment_date) ? (string)$appointment->appointment_date : '';
                             $date_display = $this->format_date($date_raw);
                             $start_time = substr(isset($appointment->appointment_time) ? (string)$appointment->appointment_time : '', 0, 5);
-                            $dur = isset($appointment->duration) ? (int)$appointment->duration : 0;
+                            // Folosește durata din serviciu dacă există, altfel durata din programare
+                            $dur = !empty($appointment->service_duration) ? (int)$appointment->service_duration : (isset($appointment->duration) ? (int)$appointment->duration : 0);
                             $end_time = $start_time ? date('H:i', strtotime($start_time) + 60 * max(0,$dur)) : '';
                             $doctor_name = isset($appointment->doctor_name) ? esc_html($appointment->doctor_name) : '';
                             // Tip/serviciu
