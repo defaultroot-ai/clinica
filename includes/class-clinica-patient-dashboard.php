@@ -3198,6 +3198,9 @@ class Clinica_Patient_Dashboard {
                 }
                 
                 wp_send_json_success($formatted_slots);
+            } else {
+                // Dacă nu există timeslots specifice pentru serviciu, nu returnează sloturi
+                wp_send_json_success(array());
             }
         }
 
