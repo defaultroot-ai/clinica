@@ -3093,11 +3093,19 @@ class Clinica_Patient_Dashboard {
                 $doctor_id, $service_id
             ));
             
+            // Debug logging
+            error_log("🔍 DEBUG: ajax_get_doctor_availability_days - doctor_id: $doctor_id, service_id: $service_id");
+            error_log("🔍 DEBUG: Query result: " . print_r($service_timeslots, true));
+            error_log("🔍 DEBUG: Found " . count($service_timeslots) . " timeslots");
+            
             // Grupează timeslots-urile pe zile
             foreach ($service_timeslots as $timeslot) {
                 $service_timeslots_by_day[$timeslot->day_of_week] = true;
                 $has_any_service_timeslots = true;
             }
+            
+            error_log("🔍 DEBUG: has_any_service_timeslots: " . ($has_any_service_timeslots ? 'true' : 'false'));
+            error_log("🔍 DEBUG: service_timeslots_by_day: " . print_r($service_timeslots_by_day, true));
         }
         for ($i = 0; $i < $advance_days; $i++) {
             $dow = strtolower($date->format('l'));
@@ -3148,6 +3156,11 @@ class Clinica_Patient_Dashboard {
             }
             $date->modify('+1 day');
         }
+        
+        // Debug logging final
+        error_log("🔍 DEBUG: Final days array: " . print_r($days, true));
+        error_log("🔍 DEBUG: Returning " . count($days) . " available days");
+        
         wp_send_json_success($days);
     }
 
