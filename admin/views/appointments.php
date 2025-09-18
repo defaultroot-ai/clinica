@@ -1852,44 +1852,54 @@ jQuery(document).ready(function($) {
         }
         
         var grid = $('#transfer-slots');
-        grid.html('<div class="slot-btn disabled">Se încarcă...</div>');
+        grid.html('<div class="slot-btn disabled"><i class="fa fa-spinner fa-spin"></i> Se încarcă sloturile...</div>');
         
-        $.post(ajaxurl, {
-            action: 'clinica_get_doctor_slots',
-            doctor_id: doctorId,
-            day: transferData.date,
-            duration: transferData.duration,
-            service_id: transferData.serviceId,
-            nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
-        }, function(resp) {
-            grid.empty();
-            
-            if (resp && resp.success && Array.isArray(resp.data) && resp.data.length > 0) {
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            timeout: 10000, // 10 secunde timeout
+            data: {
+                action: 'clinica_get_doctor_slots',
+                doctor_id: doctorId,
+                day: transferData.date,
+                duration: transferData.duration,
+                service_id: transferData.serviceId,
+                nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
+            },
+            success: function(resp) {
+                grid.empty();
                 
-                resp.data.forEach(function(slot) {
-                    var btn = $('<div/>').addClass('slot-btn').text(slot).attr('data-slot', slot);
-                    btn.on('click', function() {
-                        $('.slot-btn').removeClass('selected');
-                        $(this).addClass('selected');
-                        transferData.selectedSlot = slot;
-                        validateTransferForm();
+                if (resp && resp.success && Array.isArray(resp.data) && resp.data.length > 0) {
+                    resp.data.forEach(function(slot) {
+                        var btn = $('<div/>').addClass('slot-btn').text(slot).attr('data-slot', slot);
+                        btn.on('click', function() {
+                            $('.slot-btn').removeClass('selected');
+                            $(this).addClass('selected');
+                            transferData.selectedSlot = slot;
+                            validateTransferForm();
+                        });
+                        grid.append(btn);
                     });
-                    grid.append(btn);
-                });
-                
-                // Încearcă să selecteze slotul original
-                var originalSlot = transferData.time + ' - ' + getEndTime(transferData.time, transferData.duration);
-                if (resp.data.includes(originalSlot)) {
-                    grid.find('[data-slot="' + originalSlot + '"]').addClass('selected');
-                    transferData.selectedSlot = originalSlot;
+                    
+                    // Încearcă să selecteze slotul original
+                    var originalSlot = transferData.time + ' - ' + getEndTime(transferData.time, transferData.duration);
+                    if (resp.data.includes(originalSlot)) {
+                        grid.find('[data-slot="' + originalSlot + '"]').addClass('selected');
+                        transferData.selectedSlot = originalSlot;
+                    }
+                } else {
+                    grid.append('<div class="slot-btn disabled">Nu există sloturi disponibile</div>');
                 }
-            } else {
-                grid.append('<div class="slot-btn disabled">Nu există sloturi disponibile</div>');
+                
+                validateTransferForm();
+            },
+            error: function(xhr, status, error) {
+                if (status === 'timeout') {
+                    grid.html('<div class="slot-btn disabled">Timeout - încercați din nou</div>');
+                } else {
+                    grid.html('<div class="slot-btn disabled">Eroare la încărcare</div>');
+                }
             }
-            
-            validateTransferForm();
-        }).fail(function(xhr, status, error) {
-            grid.html('<div class="slot-btn disabled">Eroare la încărcare</div>');
         });
     }
     

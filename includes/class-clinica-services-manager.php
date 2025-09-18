@@ -541,6 +541,13 @@ class Clinica_Services_Manager {
      * Generează sloturile disponibile pentru o dată
      */
     public function generate_available_slots($doctor_id, $service_id, $date) {
+        // Cache pentru sloturile generate - 5 minute
+        $cache_key = 'generated_slots_' . $doctor_id . '_' . $service_id . '_' . $date;
+        $cached_slots = wp_cache_get($cache_key, 'clinica_generated_slots');
+        if ($cached_slots !== false) {
+            return $cached_slots;
+        }
+        
         // Obține timeslot-urile pentru ziua respectivă
         $day_of_week = date('N', strtotime($date));
         $timeslots = $this->get_timeslots_for_doctor_service($doctor_id, $service_id);
@@ -586,7 +593,12 @@ class Clinica_Services_Manager {
         // Elimină sloturile din pauzele clinicii
         $slots = $this->remove_clinic_breaks($date, $slots);
         
-        return array_values($slots);
+        $final_slots = array_values($slots);
+        
+        // Cache rezultatul pentru 5 minute
+        wp_cache_set($cache_key, $final_slots, 'clinica_generated_slots', 300);
+        
+        return $final_slots;
     }
     
     /**
