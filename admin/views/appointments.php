@@ -1746,7 +1746,7 @@ jQuery(document).ready(function($) {
             loadScript('https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ro.js', function(){
                 loadScript('<?php echo CLINICA_PLUGIN_URL; ?>assets/js/romanian-holidays.js', function(){
                     // Re-render calendarul după ce Flatpickr s-a încărcat
-                    var doctorId = $('#transfer-doctor-select').val();
+                    var doctorId = transferData.selectedDoctorId;
                     var serviceId = transferData.serviceId;
                     if (doctorId) {
                         loadTransferAvailableDays(doctorId, serviceId);
