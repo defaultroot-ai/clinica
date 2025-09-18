@@ -1632,11 +1632,7 @@ jQuery(document).ready(function($) {
                     }
                 });
                 
-                // Selectează primul doctor automat
-                var firstBtn = grid.find('.doctor-btn').first();
-                if (firstBtn.length) {
-                    firstBtn.click();
-                }
+                // Nu selecta automat primul doctor - lasă utilizatorul să aleagă
             } else {
                 grid.append('<div class="doctor-btn disabled">Nu există doctori disponibili</div>');
             }
