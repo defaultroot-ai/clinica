@@ -3126,8 +3126,8 @@ class Clinica_Patient_Dashboard {
                     $has_working_hours = true;
                 }
             } else {
-                // Dacă nu există timeslots specifice pentru serviciu, nu afișa zilele
-                $has_service_timeslots = false;
+                // Dacă nu există timeslots specifice pentru serviciu, permite zilele cu programul general
+                $has_service_timeslots = true;
             }
             
             // Pentru ziua curentă, verifică doar dacă doctorul mai lucrează
