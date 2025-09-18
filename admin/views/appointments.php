@@ -1889,6 +1889,7 @@ jQuery(document).ready(function($) {
             doctor_id: doctorId,
             day: transferData.date,
             duration: transferData.duration,
+            service_id: transferData.serviceId,
             nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
         }, function(resp) {
             console.log('🔍 DEBUG: loadTransferSlots() - AJAX SUCCESS');
