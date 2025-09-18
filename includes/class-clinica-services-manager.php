@@ -667,7 +667,7 @@ class Clinica_Services_Manager {
             "SELECT appointment_time, duration 
              FROM {$appointments_table} 
              WHERE doctor_id = %d 
-             AND DATE(appointment_time) = %s 
+             AND appointment_date = %s 
              AND status NOT IN ('cancelled', 'no_show')",
             $doctor_id, $date
         ));
