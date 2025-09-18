@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Diagramă Flux Configurare Programări Clinica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .flow-container {
+            padding: 40px;
+        }
+
+        .stage {
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .stage-header {
+            background: linear-gradient(135deg, #e74c3c 0%, #f39c12 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+        }
+
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .step-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .step-description {
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .step-code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 3em;
+            color: #3498db;
+            margin: 20px 0;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .database-schema {
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .database-schema h3 {
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .table {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .logic-flow {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .logic-flow h3 {
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .logic-step {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #fff;
+        }
+
+        .golden-rule {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 30px 0;
+            box-shadow: 0 15px 30px rgba(243, 156, 18, 0.3);
+        }
+
+        .golden-rule h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .golden-rule p {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .example {
+            background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .example h3 {
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .example-config {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .footer h2 {
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success {
+            background: #2ecc71;
+        }
+
+        .status-warning {
+            background: #f39c12;
+        }
+
+        .status-error {
+            background: #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            .steps {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .flow-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Diagramă Flux Configurare Programări Clinica</h1>
+            <p>Ghidare completă pentru setarea sistemului de programări medicale</p>
+        </div>
+
+        <div class="flow-container">
+            <!-- ETAPA 1: SERVICII -->
+            <div class="stage">
+                <div class="stage-header">
+                    📋 ETAPA 1: CONFIGURAREA SERVICIILOR
+                </div>
+                
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Accesare Interfață</div>
+                        <div class="step-description">
+                            Navighează la WordPress Admin → Clinica → Servicii & Programare → Tab "Servicii"
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Creare Serviciu</div>
+                        <div class="step-description">
+                            Click "Adaugă Serviciu" și completează formularul cu numele, durata și statusul serviciului
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Salvare</div>
+                        <div class="step-description">
+                            Click "Salvează Serviciu" pentru a salva serviciul în baza de date
+                        </div>
+                    </div>
+                </div>
+
+                <div class="database-schema">
+                    <h3>🗄️ Structura Bazei de Date</h3>
+                    <div class="table">
+                        <strong>Tabela: wp_clinica_services</strong><br>
+                        ├── id (INT) - ID unic<br>
+                        ├── name (VARCHAR) - Numele serviciului<br>
+                        ├── duration (INT) - Durata în minute<br>
+                        ├── active (TINYINT) - Status activ/inactiv<br>
+                        ├── created_at (TIMESTAMP)<br>
+                        └── updated_at (TIMESTAMP)
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- ETAPA 2: ALOAREA DOCTORILOR -->
+            <div class="stage">
+                <div class="stage-header">
+                    👨‍⚕️ ETAPA 2: ALOAREA DOCTORILOR LA SERVICII
+                </div>
+                
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Accesare Interfață</div>
+                        <div class="step-description">
+                            Navighează la Tab "Alocări Doctori" din dashboard-ul principal
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Selectare Serviciu</div>
+                        <div class="step-description">
+                            Selectează serviciul din dropdown pentru care vrei să aloci doctorii
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Alocare Doctori</div>
+                        <div class="step-description">
+                            Bifează doctorii care pot oferi serviciul selectat
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Salvare Alocări</div>
+                        <div class="step-description">
+                            Click "Salvează Alocări" pentru a salva legăturile doctor-serviciu
+                        </div>
+                    </div>
+                </div>
+
+                <div class="database-schema">
+                    <h3>🗄️ Structura Bazei de Date</h3>
+                    <div class="table">
+                        <strong>Tabela: wp_clinica_doctor_services</strong><br>
+                        ├── id (INT) - ID unic<br>
+                        ├── doctor_id (BIGINT) - ID doctor<br>
+                        ├── service_id (INT) - ID serviciu<br>
+                        ├── active (TINYINT) - Status alocare<br>
+                        ├── created_at (TIMESTAMP)<br>
+                        └── updated_at (TIMESTAMP)
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- ETAPA 3: TIMESLOTS -->
+            <div class="stage">
+                <div class="stage-header">
+                    ⏰ ETAPA 3: CONFIGURAREA TIMESLOTS-URILOR
+                </div>
+                
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Accesare Interfață</div>
+                        <div class="step-description">
+                            Navighează la Tab "Timeslots" din dashboard-ul principal
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Selectare Doctor</div>
+                        <div class="step-description">
+                            Selectează doctorul din dropdown pentru care vrei să configurezi timeslots-urile
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Selectare Serviciu</div>
+                        <div class="step-description">
+                            Selectează serviciul din dropdown pentru care vrei să configurezi timeslots-urile
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Configurare Timeslot</div>
+                        <div class="step-description">
+                            Alege ziua, orele de început/sfârșit și durata slotului
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Salvare Timeslot</div>
+                        <div class="step-description">
+                            Click "Adaugă Timeslot" pentru a salva configurația
+                        </div>
+                    </div>
+                </div>
+
+                <div class="database-schema">
+                    <h3>🗄️ Structura Bazei de Date</h3>
+                    <div class="table">
+                        <strong>Tabela: wp_clinica_doctor_timeslots</strong><br>
+                        ├── id (INT) - ID unic<br>
+                        ├── doctor_id (INT) - ID doctor<br>
+                        ├── service_id (INT) - ID serviciu<br>
+                        ├── day_of_week (TINYINT) - Ziua săptămânii (1-7)<br>
+                        ├── start_time (TIME) - Ora de început<br>
+                        ├── end_time (TIME) - Ora de sfârșit<br>
+                        ├── slot_duration (INT) - Durata slotului în minute<br>
+                        ├── is_active (BOOLEAN) - Status activ/inactiv<br>
+                        ├── created_at (TIMESTAMP)<br>
+                        └── updated_at (TIMESTAMP)
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- LOGICA SISTEMULUI -->
+            <div class="stage">
+                <div class="stage-header">
+                    🔄 LOGICA SISTEMULUI DE PROGRAMĂRI
+                </div>
+                
+                <div class="logic-flow">
+                    <h3>📅 Generarea Zilelor Disponibile</h3>
+                    <div class="logic-step">
+                        <span class="status-indicator status-success"></span>
+                        <strong>1. Verifică timeslots-urile specifice pentru serviciu</strong><br>
+                        Dacă există: continuă cu verificarea zilelor<br>
+                        Dacă nu există: returnează array gol (nu afișa zile)
+                    </div>
+                    
+                    <div class="logic-step">
+                        <span class="status-indicator status-success"></span>
+                        <strong>2. Pentru fiecare zi în următoarele 90 de zile:</strong><br>
+                        ├── Verifică sărbătorile legale românești<br>
+                        ├── Verifică concediile doctorului<br>
+                        ├── Verifică programul general de lucru (fallback)<br>
+                        ├── Verifică dacă ziua are timeslots specifice<br>
+                        └── Calculează numărul de programări existente
+                    </div>
+                    
+                    <div class="logic-step">
+                        <span class="status-indicator status-success"></span>
+                        <strong>3. Returnează zilele disponibile cu statusul lor</strong>
+                    </div>
+                </div>
+
+                <div class="logic-flow">
+                    <h3>⏱️ Generarea Sloturilor Disponibile</h3>
+                    <div class="logic-step">
+                        <span class="status-indicator status-success"></span>
+                        <strong>1. Verifică timeslots-urile specifice pentru zi</strong><br>
+                        Dacă există: folosește funcția generate_available_slots()<br>
+                        Dacă nu există: folosește programul general de lucru
+                    </div>
+                    
+                    <div class="logic-step">
+                        <span class="status-indicator status-success"></span>
+                        <strong>2. Generează sloturi pe baza:</strong><br>
+                        ├── Ora de început din timeslot<br>
+                        ├── Ora de sfârșit din timeslot<br>
+                        ├── Durata slotului din timeslot<br>
+                        └── Intervalul între sloturi
+                    </div>
+                    
+                    <div class="logic-step">
+                        <span class="status-indicator status-success"></span>
+                        <strong>3. Exclude sloturile ocupate și pauzele</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- REGULA DE AUR -->
+            <div class="golden-rule">
+                <h2>🏆 REGULA DE AUR</h2>
+                <p>FĂRĂ TIMESLOTS SPECIFICE = NU SE AFIȘEAZĂ ZILE ÎN CALENDAR!</p>
+                <p>Aceasta este regula fundamentală a sistemului!</p>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- EXEMPLE PRACTICE -->
+            <div class="stage">
+                <div class="stage-header">
+                    🎯 EXEMPLE PRACTICE DE CONFIGURARE
+                </div>
+                
+                <div class="example">
+                    <h3>🩺 EXEMPLU 1: Consultatie boala acuta</h3>
+                    <div class="example-config">
+                        <strong>SERVIUL:</strong><br>
+                        ├── Nume: Consultatie boala acuta<br>
+                        ├── Durata: 15 minute<br>
+                        └── Status: Activ<br><br>
+                        
+                        <strong>ALOCAREA:</strong><br>
+                        ├── Doctor: Coserea Andreea<br>
+                        └── Status: Activ<br><br>
+                        
+                        <strong>TIMESLOT:</strong><br>
+                        ├── Ziua: Miercuri (3)<br>
+                        ├── Ore: 10:00 - 18:00<br>
+                        ├── Durata slot: 15 minute<br>
+                        └── Status: Activ<br><br>
+                        
+                        <strong>REZULTAT:</strong><br>
+                        ├── Zile disponibile: Doar miercuri<br>
+                        ├── Sloturi generate: 10:00, 10:15, 10:30, ..., 17:45<br>
+                        └── Total sloturi: 32 sloturi
+                    </div>
+                </div>
+
+                <div class="example">
+                    <h3>💉 EXEMPLU 2: Vaccinare HPV</h3>
+                    <div class="example-config">
+                        <strong>SERVIUL:</strong><br>
+                        ├── Nume: Vaccinare HPV<br>
+                        ├── Durata: 30 minute<br>
+                        └── Status: Activ<br><br>
+                        
+                        <strong>ALOCAREA:</strong><br>
+                        ├── Doctor: Coserea Andreea<br>
+                        └── Status: Activ<br><br>
+                        
+                        <strong>TIMESLOTS:</strong><br>
+                        ├── Joi (4): 10:00 - 18:00, 30 min slot<br>
+                        └── Vineri (5): 10:00 - 18:00, 30 min slot<br><br>
+                        
+                        <strong>REZULTAT:</strong><br>
+                        ├── Zile disponibile: Joi și Vineri<br>
+                        ├── Sloturi generate: 10:00, 10:30, 11:00, ..., 17:30<br>
+                        └── Total sloturi: 16 sloturi per zi
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- WORKFLOW COMPLET -->
+            <div class="stage">
+                <div class="stage-header">
+                    🚀 WORKFLOW COMPLET DE CONFIGURARE
+                </div>
+                
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Pregătirea</div>
+                        <div class="step-description">
+                            Accesează WordPress Admin → Clinica → Servicii & Programare<br>
+                            Verifică că toate tabelele sunt create și doctorii au rolurile corecte
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Servicii</div>
+                        <div class="step-description">
+                            Creează toate serviciile necesare, setează durata corectă și activează serviciile
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Alocări</div>
+                        <div class="step-description">
+                            Pentru fiecare serviciu, alocă doctorii care pot oferi serviciul
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Timeslots</div>
+                        <div class="step-description">
+                            Pentru fiecare doctor-serviciu, creează timeslots-uri cu zilele și orele corecte
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Testare</div>
+                        <div class="step-description">
+                            Testează calendarul pentru fiecare doctor-serviciu și verifică că totul funcționează corect
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <h2>✅ SISTEMUL ESTE COMPLET FUNCȚIONAL ȘI TESTAT!</h2>
+            <p>Ordinea de configurare este crucială: Servicii → Alocări → Timeslots → Testare</p>
+        </div>
+    </div>
+
+    <script>
+        // Adaugă animații interactive
+        document.addEventListener('DOMContentLoaded', function() {
+            const steps = document.querySelectorAll('.step');
+            
+            steps.forEach((step, index) => {
+                step.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.02)';
+                });
+                
+                step.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // Adaugă efect de scroll smooth
+            const arrows = document.querySelectorAll('.arrow');
+            arrows.forEach(arrow => {
+                arrow.addEventListener('click', function() {
+                    const nextStage = this.nextElementSibling;
+                    if (nextStage) {
+                        nextStage.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

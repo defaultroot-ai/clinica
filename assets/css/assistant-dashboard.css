@@ -1,0 +1,1498 @@
+/* Dashboard Assistant - Clinica */
+.clinica-assistant-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Extinde și centrează conținutul paginii la 1600px când este prezent dashboard-ul de asistent (identic cu Doctor) */
+body:has(.clinica-assistant-dashboard) .page-content,
+body:has(.clinica-assistant-dashboard) article.post,
+body:has(.clinica-assistant-dashboard) .entry-content,
+body:has(.clinica-assistant-dashboard) .content-area,
+body:has(.clinica-assistant-dashboard) .site-main,
+body:has(.clinica-assistant-dashboard) .site-content,
+body:has(.clinica-assistant-dashboard) .page-container {
+    max-width: 1600px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+/* Micșorează spațiul alb dintre elementele de sus ale temei și header-ul dashboard-ului */
+body:has(.clinica-assistant-dashboard) .page-content { padding-top: 4px !important; }
+
+/* Forțează lățimea exactă a dashboard-ului și centrează-l */
+body:has(.clinica-assistant-dashboard) .clinica-assistant-dashboard {
+    max-width: 1600px !important;
+    width: 1600px !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+}
+
+.clinica-assistant-header {
+    text-align: center;
+    margin-bottom: 5px;
+    padding: 30px;
+    background: linear-gradient(180deg, #0a66c2 0%, #084f90 100%);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Conținut lărgit la 1600px (păstrând header-ul la 1200px) */
+.clinica-assistant-stats,
+.clinica-assistant-tabs {
+    width: 1600px;
+    max-width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Evită tăierea umbrelor la lățime 1600px */
+.clinica-assistant-tabs { overflow: visible; }
+
+.clinica-assistant-header h1 {
+    margin: 0 0 10px 0;
+    font-size: 2.5em;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.clinica-assistant-header .subtitle {
+    margin: 0;
+    font-size: 1.05em;
+    opacity: 0.95;
+}
+
+.clinica-assistant-header .header-left { text-align: left; }
+.clinica-assistant-header .header-right { text-align: right; }
+.clinica-assistant-header .header-right .user-name { font-weight: 700; }
+.clinica-assistant-header .header-right .user-role { opacity: 0.95; }
+
+.clinica-assistant-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-left: 24px;
+    padding-right: 24px;
+    box-sizing: border-box;
+}
+
+.clinica-assistant-stat-card {
+    background: white;
+    padding: 18px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-left: 4px solid #0a66c2;
+}
+
+.clinica-assistant-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.clinica-assistant-stat-card h3 {
+    margin: 0 0 12px 0;
+    color: #333;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.clinica-assistant-stat-card .stat-number {
+    font-size: 2em;
+    font-weight: 700;
+    color: #0a66c2;
+    margin-bottom: 10px;
+}
+
+.clinica-assistant-stat-card .stat-label {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.clinica-assistant-tabs {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    overflow: visible;
+}
+
+.clinica-assistant-tab-nav {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    overflow-x: auto;
+}
+
+.clinica-assistant-tab-button {
+    flex: 1;
+    min-width: 150px;
+    padding: 15px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.clinica-assistant-tab-button:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.clinica-assistant-tab-button.active {
+    background: #0a66c2;
+    color: white;
+    box-shadow: 0 2px 4px rgba(10, 102, 194, 0.3);
+}
+
+.clinica-assistant-tab-button .tab-icon {
+    font-size: 1.2em;
+}
+
+.clinica-assistant-tab-content {
+    display: none;
+    padding: 30px;
+}
+
+/* Extinde conținutul tab-urilor la 1600px */
+.clinica-assistant-tab-content.active,
+.clinica-assistant-tab-content[data-tab] {
+    width: 1600px;
+    max-width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Cardul de conținut (formular+tabel) să ocupe lățimea tabului */
+.clinica-assistant-form {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.clinica-assistant-tab-content.active {
+    display: block;
+}
+
+.clinica-assistant-actions {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.clinica-assistant-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.clinica-assistant-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.clinica-assistant-btn-primary {
+    background: #0a66c2;
+    color: white;
+}
+
+.clinica-assistant-btn-primary:hover {
+    background: #084f90;
+}
+
+.clinica-assistant-btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.clinica-assistant-btn-success:hover {
+    background: #218838;
+}
+
+.clinica-assistant-btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.clinica-assistant-btn-secondary:hover {
+    background: #5a6268;
+}
+
+.clinica-assistant-btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.clinica-assistant-btn-danger:hover {
+    background: #c82333;
+}
+
+.clinica-assistant-form {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.clinica-assistant-form h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.clinica-assistant-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.clinica-assistant-table th,
+.clinica-assistant-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.clinica-assistant-table th {
+    background: #0a66c2;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.clinica-assistant-table tr:hover {
+    background: #f8f9fa;
+}
+
+.clinica-assistant-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.clinica-assistant-status.confirmed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.clinica-assistant-status.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.clinica-assistant-status.cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.clinica-assistant-loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-size: 1.1em;
+}
+
+.clinica-assistant-appointment-item,
+.clinica-assistant-patient-item {
+    background: white;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
+    gap: 15px;
+    align-items: center;
+}
+
+.clinica-assistant-appointment-item:hover,
+.clinica-assistant-patient-item:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+.appointment-time,
+.patient-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.appointment-patient,
+.appointment-doctor,
+.patient-cnp {
+    color: #666;
+}
+
+.appointment-type,
+.patient-email {
+    color: #0a66c2;
+    font-weight: 500;
+}
+
+.appointment-status,
+.patient-phone {
+    font-size: 0.9em;
+}
+
+.patient-last-visit {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.patient-appointments {
+    color: #28a745;
+    font-weight: 500;
+}
+
+.appointment-actions,
+.patient-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    /* Anulează forțarea la 1600px pe mobil */
+    body:has(.clinica-assistant-dashboard) .clinica-assistant-dashboard {
+        width: 100% !important;
+        max-width: 100% !important;
+        left: 0 !important;
+        transform: none !important;
+        margin: 0 !important;
+    }
+    .clinica-assistant-stats,
+    .clinica-assistant-tabs,
+    .clinica-assistant-tab-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        left: 0 !important;
+        transform: none !important;
+    }
+    .clinica-assistant-dashboard { padding: 12px; }
+    .clinica-assistant-header { padding: 20px 16px; flex-direction: column; align-items: center; gap: 4px; border-radius: 12px; }
+    /* Ascunde titlul și subtitlul pe mobil; centrează numele și rolul */
+    .clinica-assistant-header .header-left { display:none; }
+    .clinica-assistant-header .header-right { text-align: center; display:flex; flex-direction:column; align-items:center; }
+    .clinica-assistant-header .header-right .user-name { font-size: 1.05em; font-weight:700; }
+    .clinica-assistant-header .header-right .user-role { font-size: 0.95em; opacity: 0.9; }
+
+    .clinica-assistant-stats { grid-template-columns: 1fr; gap: 12px; padding-left: 12px; padding-right: 12px; }
+    .clinica-assistant-stat-card { padding: 14px; border-radius: 12px; }
+    .clinica-assistant-stat-card h3 { font-size: 0.95em; margin-bottom: 8px; }
+    .clinica-assistant-stat-card .stat-number { font-size: 2.2em; }
+    .clinica-assistant-stat-card .stat-label { font-size: 0.9em; opacity: 0.85; }
+
+    .clinica-assistant-tab-nav { flex-direction: column; }
+    .clinica-assistant-tab-button { min-width: auto; }
+    .clinica-assistant-actions { flex-direction: column; }
+    .clinica-assistant-btn { width: 100%; }
+
+    .clinica-assistant-table { font-size: 0.9em; }
+    .clinica-assistant-table th,
+    .clinica-assistant-table td { padding: 8px 10px; }
+
+    .clinica-assistant-appointment-item,
+    .clinica-assistant-patient-item { grid-template-columns: 1fr; gap: 10px; text-align: center; }
+    .appointment-actions,
+    .patient-actions { justify-content: center; }
+}
+
+@media (max-width: 480px) {
+    .clinica-assistant-header h1 {
+        font-size: 1.8em;
+    }
+    
+    .clinica-assistant-stat-card .stat-number {
+        font-size: 2em;
+    }
+    
+    .clinica-assistant-tab-content {
+        padding: 20px;
+    }
+}
+
+/* Modal Styles */
+.clinica-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.clinica-modal {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 90%;
+    max-height: 90%;
+    width: 800px;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.clinica-modal-header {
+    background: linear-gradient(135deg, #0a66c2 0%, #084f90 100%);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.clinica-modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.clinica-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.clinica-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.clinica-modal-body {
+    padding: 30px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.clinica-modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.clinica-modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.clinica-modal-body::-webkit-scrollbar-thumb {
+    background: #ff6b6b;
+    border-radius: 4px;
+}
+
+.clinica-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #ee5a24;
+}
+
+/* Responsive Modal */
+@media (max-width: 768px) {
+    .clinica-modal {
+        width: 95%;
+        max-height: 95%;
+        margin: 10px;
+    }
+    
+    .clinica-modal-header {
+        padding: 15px 20px;
+    }
+    
+    .clinica-modal-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .clinica-modal-body {
+        padding: 20px;
+    }
+}
+
+/* Message Styles */
+.clinica-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: messageSlideIn 0.3s ease;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.clinica-message-info {
+    background: linear-gradient(135deg, #0a66c2 0%, #084f90 100%);
+}
+
+.clinica-message-success {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+.clinica-message-error {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+}
+
+.clinica-message-warning {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+}
+
+.clinica-message-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-left: 10px;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.clinica-message-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+/* ===== INTERFAȚA PACIENȚILOR ===== */
+
+.clinica-assistant-patients-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.clinica-patients-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+    padding: 20px;
+}
+
+.clinica-header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.clinica-header-left h2 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.5rem;
+}
+
+.clinica-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0a66c2;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 2px;
+}
+
+.clinica-header-right .clinica-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Filtre de căutare */
+.clinica-filters-container {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+    padding: 20px;
+}
+
+.clinica-filters-form {
+    margin: 0;
+}
+
+.clinica-filters-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.clinica-filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.clinica-filter-group label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.clinica-search-container {
+    position: relative;
+}
+
+.clinica-search-container input,
+.clinica-filter-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.clinica-search-container input:focus,
+.clinica-filter-group select:focus {
+    outline: none;
+    border-color: #0a66c2;
+    box-shadow: 0 0 0 2px rgba(10, 102, 194, 0.1);
+}
+
+.clinica-filters-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Sugestii de căutare */
+.clinica-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+/* Rezultate căutare familii */
+.family-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.family-search-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.family-search-item:hover {
+    background-color: #f8f9fa;
+}
+
+.family-search-item:last-child {
+    border-bottom: none;
+}
+
+.clinica-suggestions.show {
+    display: block;
+}
+
+.clinica-suggestion-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.clinica-suggestion-item:hover {
+    background: #f8f9fa;
+}
+
+.clinica-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.suggestion-details {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.suggestion-family-id {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.suggestion-family-size {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.no-results {
+    padding: 15px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+/* Rezultate și paginare */
+.clinica-results-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.displaying-num {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.clinica-view-options {
+    display: flex;
+    gap: 5px;
+}
+
+.clinica-view-options .button {
+    padding: 5px 10px;
+    min-height: auto;
+}
+
+/* Tabel pacienți */
+.clinica-patients-table {
+    width: 100%;
+    margin: 0;
+    border: none;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.clinica-patients-table th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e1e5e9;
+    font-weight: 600;
+    color: #333;
+    padding: 12px 8px;
+}
+
+.clinica-patients-table th a {
+    color: #333;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.clinica-patients-table th a:hover {
+    color: #0a66c2;
+}
+
+.clinica-patients-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+/* Lățimi coloane */
+.clinica-patients-table .column-name { width: 25%; }
+.clinica-patients-table .column-cnp { width: 15%; }
+.clinica-patients-table .column-email { width: 20%; }
+.clinica-patients-table .column-gender { width: 8%; text-align: center; }
+.clinica-patients-table .column-age { width: 8%; text-align: center; }
+.clinica-patients-table .column-appointments { width: 10%; text-align: center; }
+.clinica-patients-table .column-last-visit { width: 12%; }
+.clinica-patients-table .column-actions { width: 12%; }
+
+.clinica-patient-row:hover {
+    background: #f8f9fa;
+}
+
+/* Butoane acțiuni */
+.clinica-patients-table .column-actions {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.clinica-patients-table .column-actions .button {
+    margin: 0 3px;
+    padding: 6px 12px;
+    font-size: 12px;
+    min-height: 28px;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+    line-height: 1.2;
+}
+
+.clinica-patients-table .column-actions .button:not(.button-primary) {
+    background: #f8f9fa;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.clinica-patients-table .column-actions .button:not(.button-primary):hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+    color: #111827;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.clinica-patients-table .column-actions .button-primary {
+    background: #0a66c2;
+    border-color: #0a66c2;
+    color: white;
+    font-weight: 600;
+}
+
+.clinica-patients-table .column-actions .button-primary:hover {
+    background: #084f90;
+    border-color: #084f90;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(10, 102, 194, 0.3);
+}
+
+.clinica-patients-table .column-actions .button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Definiția duplicată pentru modaluri a fost ștearsă */
+
+/* Secțiuni de formular */
+.form-section {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background: #f9f9f9;
+}
+
+.form-section h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Secțiuni de familie */
+.family-section {
+    margin-top: 15px;
+    padding: 15px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.family-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.family-search-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.family-search-item:hover {
+    background: #f5f5f5;
+}
+
+.family-search-item:last-child {
+    border-bottom: none;
+}
+
+.family-info {
+    margin-top: 15px;
+    padding: 15px;
+    background: #e8f4fd;
+    border: 1px solid #b3d9ff;
+    border-radius: 5px;
+}
+
+.selected-family {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.selected-family strong {
+    color: #0a66c2;
+}
+
+.button-small {
+    padding: 5px 10px;
+    font-size: 12px;
+    height: auto;
+    line-height: 1.2;
+}
+
+/* Stiluri pentru modalul avansat de programare */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.autosuggest-group {
+    position: relative;
+}
+
+.clinica-search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.clinica-search-suggestions .item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.clinica-search-suggestions .item:hover {
+    background: #f5f5f5;
+}
+
+.clinica-search-suggestions .item:last-child {
+    border-bottom: none;
+}
+
+.clinica-search-suggestions .title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.clinica-search-suggestions .meta {
+    font-size: 12px;
+    color: #666;
+}
+
+.label-required::after {
+    content: " *";
+    color: #e74c3c;
+}
+
+.hint {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+.toggle-label {
+    font-weight: 500;
+    color: #333;
+}
+
+.clinica-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.clinica-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.clinica-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.clinica-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .clinica-toggle-slider {
+    background-color: #0a66c2;
+}
+
+input:checked + .clinica-toggle-slider:before {
+    transform: translateX(26px);
+}
+
+/* Loading spinner */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #0a66c2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive pentru modalul avansat */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .clinica-modal {
+        max-width: 95% !important;
+        width: 95% !important;
+    }
+}
+
+/* Stilurile duplicate au fost șterse - folosim definițiile principale */
+
+/* Formulare */
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #0a66c2;
+    box-shadow: 0 0 0 2px rgba(10, 102, 194, 0.2);
+}
+
+.clinica-patient-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clinica-patient-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #0a66c2;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.clinica-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #0a66c2;
+    color: white;
+    font-weight: bold;
+}
+
+.clinica-patient-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.clinica-patient-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.clinica-patient-id {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.clinica-cnp {
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.clinica-no-email {
+    color: #999;
+    font-style: italic;
+}
+
+.clinica-gender-simple {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 24px;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.clinica-gender-m {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.clinica-gender-f {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+.clinica-no-gender {
+    color: #999;
+}
+
+.clinica-appointments-count {
+    background: #0a66c2;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Paginare */
+.clinica-pagination {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e1e5e9;
+}
+
+.tablenav-pages {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pagination-links {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pagination-links a {
+    display: inline-block;
+    padding: 5px 8px;
+    text-decoration: none;
+    color: #0a66c2;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.pagination-links a:hover {
+    background: #0a66c2;
+    color: white;
+    border-color: #0a66c2;
+}
+
+.page-numbers {
+    min-width: 30px;
+    text-align: center;
+}
+
+.tablenav-pages-navspan {
+    display: inline-block;
+    padding: 5px 8px;
+    color: #999;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.paging-input {
+    display: inline-block;
+    padding: 5px 8px;
+    background: #0a66c2;
+    color: white;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .clinica-filters-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .clinica-header-main {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .clinica-stats {
+        justify-content: center;
+    }
+    
+    .clinica-results-info {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .clinica-patients-table {
+        font-size: 0.8rem;
+    }
+    
+    .clinica-patient-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 5px;
+    }
+    
+    .clinica-patient-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Stiluri pentru footer-ul modalului */
+.clinica-modal-footer {
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: auto;
+}
+
+/* Stiluri pentru butoanele din modaluri */
+.clinica-modal-footer .button {
+    padding: 10px 20px;
+    font-size: 14px;
+    min-height: 40px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+    line-height: 1.2;
+    min-width: 100px;
+}
+
+.clinica-modal-footer .button:not(.button-primary) {
+    background: #f8f9fa;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.clinica-modal-footer .button:not(.button-primary):hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+    color: #111827;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.clinica-modal-footer .button-primary {
+    background: #0a66c2;
+    border-color: #0a66c2;
+    color: white;
+    font-weight: 600;
+}
+
+.clinica-modal-footer .button-primary:hover {
+    background: #084f90;
+    border-color: #084f90;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(10, 102, 194, 0.3);
+}
+
+.clinica-modal-footer .button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}

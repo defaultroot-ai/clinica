@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test AJAX Browser</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+    <h1>Test AJAX Browser</h1>
+    <button id="test-ajax">Test AJAX</button>
+    <div id="result"></div>
+
+    <script>
+    $(document).ready(function() {
+        $('#test-ajax').click(function() {
+            console.log('Testing AJAX...');
+            
+            $.ajax({
+                url: 'http://192.168.1.182/plm/wp-admin/admin-ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'clinica_manager_get_users',
+                    nonce: '487d94faf8', // Nonce din browser
+                    page: 1,
+                    per_page: 20,
+                    search: '',
+                    sort_by: 'name',
+                    sort_order: 'ASC',
+                    letter_filter: ''
+                },
+                success: function(response) {
+                    console.log('AJAX Success:', response);
+                    $('#result').html('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
+                },
+                error: function(xhr, status, error) {
+                    console.log('AJAX Error:', xhr.status, xhr.statusText, error);
+                    $('#result').html('<p>Error: ' + xhr.status + ' ' + xhr.statusText + '</p>');
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>

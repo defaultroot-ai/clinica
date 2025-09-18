@@ -1,0 +1,157 @@
+<?php
+/**
+ * Script web pentru repararea erorilor din baza de date
+ */
+
+// Include WordPress
+require_once('../../../wp-load.php');
+
+// Verifică permisiunile
+if (!current_user_can('manage_options')) {
+    wp_die('Nu aveți permisiunile necesare.');
+}
+
+global $wpdb;
+
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reparare Baza de Date - Clinica</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        h1, h2 { color: #333; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Reparare Erori Baza de Date</h1>
+
+    <?php
+    // 1. Verifică și repară tabelele
+    echo "<div class='section'>";
+    echo "<h2>1. Verificare și reparare tabele</h2>";
+    
+    // Dezactivează verificarea foreign keys temporar
+    $wpdb->query("SET FOREIGN_KEY_CHECKS = 0");
+    
+    // Verifică dacă tabelele există
+    $tables = array(
+        $wpdb->prefix . 'clinica_patients',
+        $wpdb->prefix . 'clinica_appointments',
+        $wpdb->prefix . 'clinica_medical_records',
+        $wpdb->prefix . 'clinica_settings',
+        $wpdb->prefix . 'clinica_notifications',
+        $wpdb->prefix . 'clinica_imports',
+        $wpdb->prefix . 'clinica_login_logs'
+    );
+    
+    foreach ($tables as $table) {
+        $exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if ($exists) {
+            echo "<p class='success'>✅ Tabela $table există</p>";
+        } else {
+            echo "<p class='error'>❌ Tabela $table NU există</p>";
+        }
+    }
+    echo "</div>";
+    
+    // 2. Recrează tabelele dacă este necesar
+    echo "<div class='section'>";
+    echo "<h2>2. Recreare tabele (dacă este necesar)</h2>";
+    
+    // Include clasa de baza de date
+    require_once(ABSPATH . 'wp-content/plugins/clinica/includes/class-clinica-database.php');
+    
+    try {
+        Clinica_Database::create_tables();
+        echo "<p class='success'>✅ Tabelele au fost create/verificate cu succes</p>";
+    } catch (Exception $e) {
+        echo "<p class='error'>❌ Eroare la crearea tabelelor: " . $e->getMessage() . "</p>";
+    }
+    echo "</div>";
+    
+    // 3. Verifică și repară coloanele lipsă
+    echo "<div class='section'>";
+    echo "<h2>3. Verificare coloane lipsă</h2>";
+    
+    $table_patients = $wpdb->prefix . 'clinica_patients';
+    $columns = $wpdb->get_results("SHOW COLUMNS FROM $table_patients");
+    
+    $expected_columns = array(
+        'id', 'user_id', 'cnp', 'cnp_type', 'phone_primary', 'phone_secondary',
+        'birth_date', 'gender', 'age', 'address', 'emergency_contact', 'blood_type',
+        'allergies', 'medical_history', 'password_method', 'import_source',
+        'created_by', 'created_at', 'updated_at', 'family_id', 'family_role',
+        'family_head_id', 'family_name'
+    );
+    
+    foreach ($expected_columns as $column) {
+        $exists = false;
+        foreach ($columns as $col) {
+            if ($col->Field === $column) {
+                $exists = true;
+                break;
+            }
+        }
+        
+        if ($exists) {
+            echo "<p class='success'>✅ Coloana $column există</p>";
+        } else {
+            echo "<p class='error'>❌ Coloana $column NU există</p>";
+        }
+    }
+    echo "</div>";
+    
+    // 4. Verifică datele din tabele
+    echo "<div class='section'>";
+    echo "<h2>4. Verificare date</h2>";
+    
+    $patients_count = $wpdb->get_var("SELECT COUNT(*) FROM $table_patients");
+    echo "<p class='info'>Pacienți în baza de date: $patients_count</p>";
+    
+    $appointments_count = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}clinica_appointments");
+    echo "<p class='info'>Programări în baza de date: $appointments_count</p>";
+    echo "</div>";
+    
+    // 5. Verifică foreign keys
+    echo "<div class='section'>";
+    echo "<h2>5. Verificare foreign keys</h2>";
+    
+    $foreign_keys = $wpdb->get_results("
+        SELECT 
+            TABLE_NAME,
+            COLUMN_NAME,
+            CONSTRAINT_NAME,
+            REFERENCED_TABLE_NAME,
+            REFERENCED_COLUMN_NAME
+        FROM information_schema.KEY_COLUMN_USAGE 
+        WHERE REFERENCED_TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME LIKE '{$wpdb->prefix}clinica_%'
+    ");
+    
+    if ($foreign_keys) {
+        foreach ($foreign_keys as $fk) {
+            echo "<p class='success'>✅ Foreign key: {$fk->TABLE_NAME}.{$fk->COLUMN_NAME} -> {$fk->REFERENCED_TABLE_NAME}.{$fk->REFERENCED_COLUMN_NAME}</p>";
+        }
+    } else {
+        echo "<p class='warning'>⚠️ Nu s-au găsit foreign keys</p>";
+    }
+    echo "</div>";
+    
+    // Reactivează verificarea foreign keys
+    $wpdb->query("SET FOREIGN_KEY_CHECKS = 1");
+    
+    echo "<div class='section'>";
+    echo "<h2 class='success'>✅ Reparare completă!</h2>";
+    echo "<p>Baza de date ar trebui să funcționeze corect acum.</p>";
+    echo "<p><a href='" . admin_url('admin.php?page=clinica-appointments') . "'>Testează pagina de programări</a></p>";
+    echo "<p><a href='" . admin_url('admin.php?page=clinica-settings') . "'>Testează setările</a></p>";
+    echo "</div>";
+    ?>
+</body>
+</html> 

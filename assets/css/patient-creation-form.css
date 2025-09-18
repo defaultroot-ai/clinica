@@ -1,0 +1,454 @@
+/**
+ * CSS pentru Formularul de Creare Pacienți
+ * 
+ * @package Clinica
+ * @since 1.0.0
+ */
+
+/* Font consistent pentru diacritice românești */
+* {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+/* Container principal */
+.clinica-patient-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Header formular */
+.clinica-form-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.clinica-form-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.clinica-form-header p {
+    margin: 10px 0 0 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+/* Progress bar */
+.clinica-tab-progress {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.clinica-tab-progress-bar {
+    background: #e9ecef;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.clinica-tab-progress-fill {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    height: 100%;
+    width: 25%;
+    transition: width 0.3s ease;
+}
+
+.clinica-tab-progress-text {
+    text-align: center;
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Tab navigation */
+.clinica-tab-navigation {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.clinica-tab-button {
+    flex: 1;
+    padding: 15px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.clinica-tab-button:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.clinica-tab-button.active {
+    background: #fff;
+    color: #667eea;
+    border-bottom: 3px solid #667eea;
+}
+
+.clinica-tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #fff;
+}
+
+/* Tab content */
+.clinica-tab-content {
+    padding: 30px;
+}
+
+.clinica-tab-pane {
+    display: none;
+}
+
+.clinica-tab-pane.active {
+    display: block;
+}
+
+/* Form groups */
+.clinica-form-group {
+    margin-bottom: 20px;
+}
+
+.clinica-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.clinica-form-group input,
+.clinica-form-group select,
+.clinica-form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+}
+
+.clinica-form-group input:focus,
+.clinica-form-group select:focus,
+.clinica-form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.clinica-form-group input:disabled,
+.clinica-form-group select:disabled {
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Form rows pentru layout în 2 coloane */
+.clinica-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .clinica-form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+
+/* CNP validation styles */
+.clinica-cnp-validation {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.clinica-cnp-validation.valid {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.clinica-cnp-validation.invalid {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.clinica-cnp-validation.loading {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Password generation */
+.clinica-password-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.clinica-password-section h4 {
+    margin: 0 0 15px 0;
+    color: #495057;
+    font-size: 16px;
+}
+
+.clinica-password-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.clinica-password-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clinica-password-option input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+.clinica-password-option label {
+    margin: 0;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.clinica-password-generate {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.clinica-password-generate .clinica-form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.clinica-password-generate button {
+    padding: 12px 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.clinica-password-generate button:hover {
+    background: #218838;
+}
+
+/* Form actions */
+.clinica-form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+    margin-top: 30px;
+}
+
+.clinica-form-actions button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clinica-form-actions .clinica-btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.clinica-form-actions .clinica-btn-primary:hover {
+    background: #5a6fd8;
+    transform: translateY(-1px);
+}
+
+.clinica-form-actions .clinica-btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.clinica-form-actions .clinica-btn-secondary:hover {
+    background: #5a6268;
+}
+
+.clinica-form-actions .clinica-btn-cancel {
+    background: #dc3545;
+    color: white;
+}
+
+.clinica-form-actions .clinica-btn-cancel:hover {
+    background: #c82333;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .clinica-patient-form-container {
+        margin: 10px;
+        border-radius: 6px;
+    }
+    
+    .clinica-tab-content {
+        padding: 20px;
+    }
+    
+    .clinica-form-actions {
+        flex-direction: column;
+    }
+    
+    .clinica-form-actions button {
+        width: 100%;
+    }
+    
+    .clinica-tab-navigation {
+        flex-direction: column;
+    }
+    
+    .clinica-tab-button {
+        text-align: center;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .clinica-tab-button.active {
+        border-bottom: 3px solid #667eea;
+    }
+}
+
+/* Loading states */
+.clinica-loading {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: clinica-spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes clinica-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error and success messages */
+.clinica-message {
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.clinica-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.clinica-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.clinica-message.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.clinica-message.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Required field indicator */
+.clinica-required {
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+/* Help text */
+.clinica-help-text {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* Field validation states */
+.clinica-form-group.has-error input,
+.clinica-form-group.has-error select,
+.clinica-form-group.has-error textarea {
+    border-color: #dc3545;
+}
+
+.clinica-form-group.has-error .clinica-error-message {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.clinica-form-group.has-success input,
+.clinica-form-group.has-success select,
+.clinica-form-group.has-success textarea {
+    border-color: #28a745;
+}
+
+/* Accessibility */
+.clinica-form-group input:focus,
+.clinica-form-group select:focus,
+.clinica-form-group textarea:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .clinica-form-actions,
+    .clinica-tab-navigation,
+    .clinica-tab-progress {
+        display: none;
+    }
+    
+    .clinica-tab-pane {
+        display: block !important;
+        page-break-inside: avoid;
+    }
+} 

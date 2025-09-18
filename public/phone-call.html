@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Telefonic AI - Clinică</title>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .call-status {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-connecting { background: #ffc107; }
+        .status-connected { background: #28a745; }
+        .status-error { background: #dc3545; }
+
+        .patient-form {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .call-controls {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .call-controls.show {
+            display: block;
+        }
+
+        .ai-response {
+            background: #e8f5e8;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+            text-align: left;
+        }
+
+        .ai-response h4 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .conversation-log {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .log-user {
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+        }
+
+        .log-ai {
+            background: #f3e5f5;
+            border-left: 3px solid #9c27b0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🤖</div>
+        <h1>Robot Telefonic AI</h1>
+        <p class="subtitle">Clinică Medicală</p>
+
+        <!-- Status Apel -->
+        <div class="call-status">
+            <div class="status-indicator status-connecting"></div>
+            <span class="status-text" id="status-text">Pregătit pentru apel</span>
+        </div>
+
+        <!-- Formular Identificare Pacient -->
+        <div class="patient-form" id="patient-form">
+            <h3>Identificare Pacient</h3>
+            <div class="form-group">
+                <label for="patient-identifier">CNP sau Număr de Telefon:</label>
+                <input type="text" id="patient-identifier" placeholder="Ex: 1234567890123 sau 0722123456">
+            </div>
+            <button class="btn" onclick="identifyPatient()">Identificare Pacient</button>
+        </div>
+
+        <!-- Controale Apel -->
+        <div class="call-controls" id="call-controls">
+            <h3>Controale Apel</h3>
+            <button class="btn btn-success" id="start-call">🎤 Începe Apelul</button>
+            <button class="btn btn-danger" id="end-call">📞 Termină Apelul</button>
+            <button class="btn" id="transfer-call">👥 Transfer la Operator</button>
+        </div>
+
+        <!-- Răspuns AI -->
+        <div class="ai-response" id="ai-response" style="display: none;">
+            <h4>🤖 Răspuns AI:</h4>
+            <p id="ai-response-text"></p>
+        </div>
+
+        <!-- Log Conversație -->
+        <div class="conversation-log" id="conversation-log" style="display: none;">
+            <h4>📝 Istoric Conversație</h4>
+            <div id="log-entries"></div>
+        </div>
+
+        <!-- Mesaje de Eroare/Succes -->
+        <div id="message-container"></div>
+    </div>
+
+    <script>
+        class ClinicaPhoneCall {
+            constructor() {
+                this.localStream = null;
+                this.peerConnection = null;
+                this.patientId = null;
+                this.callId = null;
+                this.conversationHistory = [];
+                this.isCallActive = false;
+                this.aiProcessor = new ClinicaAIProcessor();
+            }
+
+            async identifyPatient() {
+                const identifier = document.getElementById('patient-identifier').value.trim();
+                
+                if (!identifier) {
+                    this.showMessage('Vă rog să introduceți CNP-ul sau numărul de telefon.', 'error');
+                    return;
+                }
+
+                this.updateStatus('Se identifică pacientul...', 'connecting');
+
+                try {
+                    const response = await fetch('/plm/wp-content/plugins/clinica/api/identify-patient-simple.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ identifier: identifier })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.patientId = data.patient.id;
+                        this.updateStatus(`Bună ziua ${data.patient.first_name} ${data.patient.last_name}!`, 'connected');
+                        this.showMessage(`Pacient identificat: ${data.patient.first_name} ${data.patient.last_name}`, 'success');
+                        this.showCallControls();
+                        this.addToLog('user', `Identificare: ${identifier}`);
+                        this.addToLog('ai', `Bună ziua ${data.patient.first_name}! Cum vă pot ajuta astăzi?`);
+                    } else {
+                        this.updateStatus('Pacientul nu a fost găsit.', 'error');
+                        this.showMessage('Pacientul nu a fost găsit în baza de date.', 'error');
+                    }
+                } catch (error) {
+                    this.updateStatus('Eroare la identificare.', 'error');
+                    this.showMessage('Eroare de conexiune. Vă rog să încercați din nou.', 'error');
+                }
+            }
+
+            async startCall() {
+                if (!this.patientId) {
+                    this.showMessage('Vă rog să identificați pacientul înainte de a începe apelul.', 'error');
+                    return;
+                }
+
+                this.updateStatus('Se inițializează apelul...', 'connecting');
+
+                try {
+                    // Obține stream-ul audio
+                    this.localStream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                        video: false
+                    });
+
+                    // Creează conexiunea WebRTC
+                    this.peerConnection = new RTCPeerConnection();
+
+                    // Adaugă stream-ul local
+                    this.localStream.getTracks().forEach(track => {
+                        this.peerConnection.addTrack(track, this.localStream);
+                    });
+
+                    // Procesează stream-ul remote
+                    this.peerConnection.ontrack = (event) => {
+                        this.playRemoteAudio(event.streams[0]);
+                    };
+
+                    // Creează offer
+                    const offer = await this.peerConnection.createOffer();
+                    await this.peerConnection.setLocalDescription(offer);
+
+                    // Trimite offer-ul la server
+                    await this.sendOfferToServer(offer);
+
+                    this.isCallActive = true;
+                    this.updateStatus('Apel activ - Conectat cu AI', 'connected');
+                    this.showMessage('Apelul a început cu succes!', 'success');
+
+                    // Începe conversația cu AI
+                    this.startAIConversation();
+
+                } catch (error) {
+                    this.updateStatus('Eroare la începerea apelului.', 'error');
+                    this.showMessage('Eroare: ' + error.message, 'error');
+                }
+            }
+
+            async sendOfferToServer(offer) {
+                const response = await fetch('/plm/wp-content/plugins/clinica/api/webrtc-offer-simple.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        offer: offer,
+                        patient_id: this.patientId,
+                        call_id: this.callId || Date.now().toString()
+                    })
+                });
+
+                const data = await response.json();
+                return data;
+            }
+
+            playRemoteAudio(stream) {
+                const audio = document.createElement('audio');
+                audio.srcObject = stream;
+                audio.play();
+            }
+
+            async startAIConversation() {
+                // Simulează o conversație cu AI
+                const aiGreeting = await this.aiProcessor.generateGreeting(this.patientId);
+                this.showAIResponse(aiGreeting);
+                this.addToLog('ai', aiGreeting);
+            }
+
+            async processUserInput(text) {
+                this.addToLog('user', text);
+                
+                const aiResponse = await this.aiProcessor.processRequest(text, this.patientId);
+                this.showAIResponse(aiResponse);
+                this.addToLog('ai', aiResponse);
+            }
+
+            endCall() {
+                if (this.localStream) {
+                    this.localStream.getTracks().forEach(track => track.stop());
+                }
+                if (this.peerConnection) {
+                    this.peerConnection.close();
+                }
+                
+                this.isCallActive = false;
+                this.updateStatus('Apel terminat', 'connecting');
+                this.showMessage('Apelul a fost terminat.', 'success');
+            }
+
+            transferCall() {
+                this.updateStatus('Se transferă la operator uman...', 'connecting');
+                this.showMessage('Vă transfer la operator uman.', 'success');
+                this.addToLog('ai', 'Vă transfer la operator uman pentru asistență personalizată.');
+                
+                // Simulează transferul
+                setTimeout(() => {
+                    this.endCall();
+                }, 2000);
+            }
+
+            updateStatus(text, type) {
+                const statusText = document.getElementById('status-text');
+                const statusIndicator = document.querySelector('.status-indicator');
+                
+                statusText.textContent = text;
+                statusIndicator.className = `status-indicator status-${type}`;
+            }
+
+            showCallControls() {
+                document.getElementById('call-controls').classList.add('show');
+            }
+
+            showAIResponse(text) {
+                const aiResponse = document.getElementById('ai-response');
+                const aiResponseText = document.getElementById('ai-response-text');
+                
+                aiResponseText.textContent = text;
+                aiResponse.style.display = 'block';
+            }
+
+            addToLog(speaker, message) {
+                this.conversationHistory.push({ speaker, message, timestamp: new Date() });
+                
+                const logEntries = document.getElementById('log-entries');
+                const logContainer = document.getElementById('conversation-log');
+                
+                const entry = document.createElement('div');
+                entry.className = `log-entry log-${speaker}`;
+                entry.innerHTML = `
+                    <strong>${speaker === 'user' ? '👤 Pacient' : '🤖 AI'}:</strong> 
+                    ${message}
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        ${new Date().toLocaleTimeString()}
+                    </small>
+                `;
+                
+                logEntries.appendChild(entry);
+                logContainer.style.display = 'block';
+                logEntries.scrollTop = logEntries.scrollHeight;
+            }
+
+            showMessage(text, type) {
+                const container = document.getElementById('message-container');
+                const message = document.createElement('div');
+                message.className = `${type}-message`;
+                message.textContent = text;
+                
+                container.appendChild(message);
+                
+                setTimeout(() => {
+                    message.remove();
+                }, 5000);
+            }
+        }
+
+        class ClinicaAIProcessor {
+            async generateGreeting(patientId) {
+                // Simulează generarea unui salut personalizat
+                return "Bună ziua! Sunt asistentul AI al clinicii. Cum vă pot ajuta astăzi? " +
+                       "Puteți să-mi spuneți dacă doriți o programare, informații despre vaccinări, " +
+                       "sau aveți alte întrebări.";
+            }
+
+            async processRequest(text, patientId) {
+                // Simulează procesarea cererii prin AI
+                const lowerText = text.toLowerCase();
+                
+                if (lowerText.includes('programare') || lowerText.includes('programa')) {
+                    return "Înțeleg că doriți să faceți o programare. " +
+                           "Avem disponibile următoarele slot-uri: " +
+                           "Luni 14:00, Miercuri 10:30, Vineri 16:00. " +
+                           "Pentru a confirma, apăsați 1. Pentru a vorbi cu secretariatul, apăsați 2.";
+                } else if (lowerText.includes('vaccin') || lowerText.includes('vaccinare')) {
+                    return "Pentru vaccinări, vă pot programa cu asistenta noastră. " +
+                           "Ce tip de vaccin aveți nevoie? " +
+                           "Vă pot informa și despre programul de vaccinări disponibil.";
+                } else if (lowerText.includes('urgent') || lowerText.includes('problema')) {
+                    return "Înțeleg că aveți o problemă urgentă. " +
+                           "Vă pot programa cu un doctor disponibil sau vă pot transfera la secția de urgență. " +
+                           "Care este natura problemei?";
+                } else {
+                    return "Vă rog să-mi spuneți mai clar cum vă pot ajuta. " +
+                           "Pot să vă ajut cu programări, vaccinări, consultații sau alte întrebări.";
+                }
+            }
+        }
+
+        // Inițializare
+        const phoneCall = new ClinicaPhoneCall();
+
+        // Funcții globale
+        function identifyPatient() {
+            phoneCall.identifyPatient();
+        }
+
+        // Event listeners
+        document.getElementById('start-call').addEventListener('click', () => {
+            phoneCall.startCall();
+        });
+
+        document.getElementById('end-call').addEventListener('click', () => {
+            phoneCall.endCall();
+        });
+
+        document.getElementById('transfer-call').addEventListener('click', () => {
+            phoneCall.transferCall();
+        });
+
+        // Permite introducerea textului pentru simularea conversației
+        document.getElementById('patient-identifier').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                identifyPatient();
+            }
+        });
+
+        // Simulare input utilizator pentru testare
+        window.simulateUserInput = function(text) {
+            if (phoneCall.isCallActive) {
+                phoneCall.processUserInput(text);
+            }
+        };
+    </script>
+</body>
+</html> 

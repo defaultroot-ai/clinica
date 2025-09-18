@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinica - Dashboard Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .user-info {
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            margin: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.5em;
+        }
+
+        .user-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .user-role {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: #3498db;
+        }
+
+        .nav-item.active {
+            background: rgba(52, 152, 219, 0.2);
+            border-left-color: #3498db;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 2em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: white;
+        }
+
+        .card-icon.patients {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .card-icon.appointments {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .card-icon.doctors {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .card-icon.revenue {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+
+        .card-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .card-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+        }
+
+        .card-change.positive {
+            color: #27ae60;
+        }
+
+        .card-change.negative {
+            color: #e74c3c;
+        }
+
+        /* Recent Activity */
+        .activity-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.1em;
+            color: white;
+        }
+
+        .activity-icon.new-patient {
+            background: #3498db;
+        }
+
+        .activity-icon.appointment {
+            background: #27ae60;
+        }
+
+        .activity-icon.payment {
+            background: #f39c12;
+        }
+
+        .activity-icon.alert {
+            background: #e74c3c;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .activity-time {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .quick-action {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .quick-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .quick-action-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.8em;
+            color: white;
+        }
+
+        .quick-action-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .quick-action-desc {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid #27ae60;
+        }
+
+        .notification.error {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .notification.warning {
+            border-left: 4px solid #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-hospital"></i> Clinica</h2>
+                <p>Sistem Medical</p>
+            </div>
+
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div class="user-name">Dr. Popescu</div>
+                <div class="user-role">Medic Specialist</div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    Pacienți
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    Programări
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user-md"></i>
+                    Medici
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-file-medical"></i>
+                    Dosare Medicale
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    Rapoarte
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    Setări
+                </a>
+                <a href="demo-login.html" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Deconectare
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p>Bun venit în sistemul de gestionare medicală</p>
+                </div>
+                <div class="top-actions">
+                    <button class="btn btn-primary" onclick="location.href='demo-patient-creation.html'">
+                        <i class="fas fa-user-plus"></i>
+                        Creare Pacient
+                    </button>
+                    <button class="btn btn-success" onclick="showNotification('Programare creată cu succes!', 'success')">
+                        <i class="fas fa-calendar-plus"></i>
+                        Programare Nouă
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Cards -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Pacienți Totali</div>
+                        <div class="card-icon patients">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">4,247</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +12% față de luna trecută
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Programări Astăzi</div>
+                        <div class="card-icon appointments">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">23</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +3 față de ieri
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Medici Activi</div>
+                        <div class="card-icon doctors">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">8</div>
+                    <div class="card-change">
+                        <i class="fas fa-minus"></i>
+                        Neschimbat
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Venituri Luna Aceasta</div>
+                        <div class="card-icon revenue">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">45,230 RON</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +8% față de luna trecută
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <a href="demo-patient-creation.html" class="quick-action">
+                    <div class="quick-action-icon" style="background: #3498db;">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="quick-action-title">Creare Pacient</div>
+                    <div class="quick-action-desc">Adaugă un pacient nou în sistem</div>
+                </a>
+
+                <a href="#" class="quick-action" onclick="showNotification('Funcționalitate în dezvoltare', 'warning')">
+                    <div class="quick-action-icon" style="background: #27ae60;">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <div class="quick-action-title">Programare Nouă</div>
+                    <div class="quick-action-desc">Creează o programare pentru pacient</div>
+                </a>
+
+                <a href="#" class="quick-action" onclick="showNotification('Funcționalitate în dezvoltare', 'warning')">
+                    <div class="quick-action-icon" style="background: #f39c12;">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <div class="quick-action-title">Dosar Medical</div>
+                    <div class="quick-action-desc">Accesează dosarele medicale</div>
+                </a>
+
+                <a href="#" class="quick-action" onclick="showNotification('Funcționalitate în dezvoltare', 'warning')">
+                    <div class="quick-action-icon" style="background: #9b59b6;">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="quick-action-title">Rapoarte</div>
+                    <div class="quick-action-desc">Generează rapoarte și statistici</div>
+                </a>
+
+                <a href="#" class="quick-action" onclick="showNotification('Funcționalitate în dezvoltare', 'warning')">
+                    <div class="quick-action-icon" style="background: #e74c3c;">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <div class="quick-action-title">Import Pacienți</div>
+                    <div class="quick-action-desc">Importă pacienți din sisteme externe</div>
+                </a>
+
+                <a href="#" class="quick-action" onclick="showNotification('Funcționalitate în dezvoltare', 'warning')">
+                    <div class="quick-action-icon" style="background: #1abc9c;">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="quick-action-title">Setări</div>
+                    <div class="quick-action-desc">Configurează sistemul</div>
+                </a>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="activity-section">
+                <div class="section-header">
+                    <h3 class="section-title">Activitate Recentă</h3>
+                    <button class="btn btn-primary" onclick="refreshActivity()">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualizează
+                    </button>
+                </div>
+
+                <ul class="activity-list" id="activityList">
+                    <li class="activity-item">
+                        <div class="activity-icon new-patient">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Pacient nou înregistrat</div>
+                            <div class="activity-time">Maria Popescu (CNP: 2345678901234) - acum 5 minute</div>
+                        </div>
+                    </li>
+
+                    <li class="activity-item">
+                        <div class="activity-icon appointment">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Programare confirmată</div>
+                            <div class="activity-time">Ion Ionescu - Consultație cardiologie - mâine 10:00</div>
+                        </div>
+                    </li>
+
+                    <li class="activity-item">
+                        <div class="activity-icon payment">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Plată procesată</div>
+                            <div class="activity-time">Elena Dumitrescu - 150 RON pentru consultație - acum 1 oră</div>
+                        </div>
+                    </li>
+
+                    <li class="activity-item">
+                        <div class="activity-icon alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Alergie detectată</div>
+                            <div class="activity-time">Pacientul Andrei Marin are alergie la penicilină - acum 2 ore</div>
+                        </div>
+                    </li>
+
+                    <li class="activity-item">
+                        <div class="activity-icon new-patient">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Import pacienți finalizat</div>
+                            <div class="activity-time">150 pacienți importați din sistemul ICMED - acum 3 ore</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funcție pentru afișarea notificărilor
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Afișează notificarea
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Elimină notificarea după 5 secunde
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 5000);
+        }
+
+        // Funcție pentru actualizarea activității
+        function refreshActivity() {
+            const activityList = document.getElementById('activityList');
+            const loadingItem = document.createElement('li');
+            loadingItem.className = 'activity-item';
+            loadingItem.innerHTML = `
+                <div class="activity-icon" style="background: #3498db;">
+                    <i class="fas fa-sync-alt fa-spin"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Actualizare în curs...</div>
+                    <div class="activity-time">Se încarcă activitatea recentă</div>
+                </div>
+            `;
+            
+            activityList.insertBefore(loadingItem, activityList.firstChild);
+            
+            setTimeout(() => {
+                loadingItem.remove();
+                showNotification('Activitatea a fost actualizată!', 'success');
+            }, 2000);
+        }
+
+        // Funcție pentru navigarea în sidebar
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (this.getAttribute('href') === '#') {
+                    e.preventDefault();
+                    showNotification('Funcționalitate în dezvoltare', 'warning');
+                }
+                
+                // Actualizează clasa active
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Funcție pentru toggle sidebar pe mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Adaugă buton pentru toggle sidebar pe mobile
+        if (window.innerWidth <= 768) {
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'btn btn-primary';
+            toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            toggleBtn.style.position = 'fixed';
+            toggleBtn.style.top = '20px';
+            toggleBtn.style.left = '20px';
+            toggleBtn.style.zIndex = '1002';
+            toggleBtn.onclick = toggleSidebar;
+            document.body.appendChild(toggleBtn);
+        }
+
+        // Simulare actualizări în timp real
+        setInterval(() => {
+            const cards = document.querySelectorAll('.card-value');
+            cards.forEach(card => {
+                const currentValue = parseInt(card.textContent.replace(/[^\d]/g, ''));
+                const randomChange = Math.floor(Math.random() * 5) - 2; // -2 to +2
+                const newValue = Math.max(0, currentValue + randomChange);
+                
+                if (card.textContent.includes('RON')) {
+                    card.textContent = newValue.toLocaleString() + ' RON';
+                } else {
+                    card.textContent = newValue.toLocaleString();
+                }
+            });
+        }, 30000); // Actualizează la fiecare 30 secunde
+
+        // Demo pentru crearea rapidă de pacienți
+        function createDemoPatient() {
+            const demoCNPs = [
+                '1234567890123',
+                '2345678901234',
+                '3456789012345',
+                '4567890123456',
+                '5678901234567'
+            ];
+            
+            const randomCNP = demoCNPs[Math.floor(Math.random() * demoCNPs.length)];
+            const names = ['Ion', 'Maria', 'Andrei', 'Elena', 'Mihai', 'Ana', 'Vasile', 'Diana'];
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            
+            showNotification(`Pacient nou creat: ${randomName} (CNP: ${randomCNP})`, 'success');
+            
+            // Actualizează numărul de pacienți
+            const patientsCard = document.querySelector('.card-value');
+            const currentPatients = parseInt(patientsCard.textContent.replace(/[^\d]/g, ''));
+            patientsCard.textContent = (currentPatients + 1).toLocaleString();
+        }
+
+        // Adaugă buton pentru demo
+        const demoBtn = document.createElement('button');
+        demoBtn.className = 'btn btn-warning';
+        demoBtn.innerHTML = '<i class="fas fa-magic"></i> Demo Pacient';
+        demoBtn.onclick = createDemoPatient;
+        demoBtn.style.position = 'fixed';
+        demoBtn.style.bottom = '20px';
+        demoBtn.style.right = '20px';
+        demoBtn.style.zIndex = '1002';
+        document.body.appendChild(demoBtn);
+
+        // Inițializare
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('Bun venit în sistemul Clinica!', 'success');
+        });
+    </script>
+</body>
+</html> 

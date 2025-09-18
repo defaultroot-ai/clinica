@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Validare CNP - Clinica</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .demo-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        input.is-valid {
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+        
+        input.is-invalid {
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+        
+        .cnp-feedback {
+            margin-top: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        
+        .cnp-feedback.valid-feedback {
+            color: #27ae60;
+            background-color: #d5f4e6;
+            border-left-color: #27ae60;
+        }
+        
+        .cnp-feedback.invalid-feedback {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            border-left-color: #e74c3c;
+        }
+        
+        .cnp-feedback.info-feedback {
+            color: #3498db;
+            background-color: #d6eaf8;
+            border-left-color: #3498db;
+        }
+        
+        .info-box {
+            background-color: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #0c5460;
+        }
+        
+        .steps {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .steps li {
+            padding: 8px 0;
+            border-left: 3px solid #3498db;
+            padding-left: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .steps li:before {
+            content: "✓";
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>Demo Validare CNP - Clinica</h1>
+        
+        <div class="info-box">
+            <h3>Îmbunătățiri Implementate</h3>
+            <ul class="steps">
+                <li>Validarea se face doar când sunt introduse toate cele 13 cifre</li>
+                <li>Se afișează mesaj de progres pentru CNP-uri incomplete</li>
+                <li>Nu se mai fac cereri AJAX inutile la fiecare cifră</li>
+                <li>Se anulează cererile anterioare pentru a evita conflictele</li>
+                <li>Câmpurile se populează automat când CNP-ul este valid</li>
+            </ul>
+        </div>
+        
+        <form>
+            <div class="form-group">
+                <label for="cnp">CNP *</label>
+                <input type="text" id="cnp" name="cnp" maxlength="13" placeholder="Introduceți CNP-ul (13 cifre)">
+                <div class="cnp-validation-message"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="birth_date">Data nașterii</label>
+                <input type="date" id="birth_date" name="birth_date" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="gender">Sex</label>
+                <select id="gender" name="gender">
+                    <option value="">Selectează</option>
+                    <option value="male">Masculin</option>
+                    <option value="female">Feminin</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="age">Vârsta</label>
+                <input type="number" id="age" name="age" readonly>
+            </div>
+        </form>
+        
+        <div class="info-box">
+            <h3>Instrucțiuni de Testare</h3>
+            <ol>
+                <li>Începeți să introduceți CNP-ul "1800404080170" cifră cu cifră</li>
+                <li>Observați că nu apar erori în timpul introducerii</li>
+                <li>La 12 cifre veți vedea mesajul "Introduceți toate cele 13 cifre"</li>
+                <li>După introducerea ultimei cifre, CNP-ul va fi validat automat</li>
+                <li>Câmpurile se vor popula automat cu datele extrase din CNP</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        // Simulare validare CNP pentru demo
+        document.getElementById('cnp').addEventListener('input', function() {
+            var cnp = this.value;
+            var $field = $(this);
+            var $feedback = $field.siblings('.cnp-feedback');
+            
+            // Curăță feedback-ul anterior
+            $field.removeClass('is-valid is-invalid');
+            $feedback.remove();
+            
+            if (cnp.length === 0) {
+                return;
+            }
+            
+            // Validează doar dacă CNP-ul are exact 13 cifre
+            if (cnp.length !== 13) {
+                // Afișează mesaj de progres pentru CNP-uri incomplete
+                if (cnp.length > 0) {
+                    $field.after('<div class="cnp-feedback info-feedback">Introduceți toate cele 13 cifre</div>');
+                }
+                return;
+            }
+            
+            // Verifică dacă conține doar cifre
+            if (!/^\d{13}$/.test(cnp)) {
+                $field.addClass('is-invalid');
+                $field.after('<div class="cnp-feedback invalid-feedback">CNP-ul trebuie să conțină doar cifre</div>');
+                return;
+            }
+            
+            // Simulează validarea pentru CNP-ul de test
+            if (cnp === '1800404080170') {
+                $field.removeClass('is-invalid').addClass('is-valid');
+                $field.after('<div class="cnp-feedback valid-feedback">CNP valid</div>');
+                
+                // Populează câmpurile
+                document.getElementById('birth_date').value = '1980-04-04';
+                document.getElementById('gender').value = 'male';
+                document.getElementById('age').value = '45';
+            } else {
+                $field.removeClass('is-valid').addClass('is-invalid');
+                $field.after('<div class="cnp-feedback invalid-feedback">CNP invalid</div>');
+            }
+        });
+    </script>
+</body>
+</html> 

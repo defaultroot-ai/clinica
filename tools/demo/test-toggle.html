@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Toggle Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .toggle-btn { background: #0073aa; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin: 10px; }
+        .toggle-btn:hover { background: #005a87; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        .dashboard-preview { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 10px 0; }
+        .dashboard-preview h3 { margin-top: 0; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard Toggle Test</h1>
+        
+        <div class="test-section">
+            <h2>Toggle Button Test</h2>
+            <button class="toggle-btn" onclick="testToggle()">Test Toggle Function</button>
+            <button class="toggle-btn" onclick="testJQuery()">Test jQuery</button>
+            <button class="toggle-btn" onclick="testAJAX()">Test AJAX</button>
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Dashboard Preview</h2>
+            <div class="dashboard-preview">
+                <h3>Basic Dashboard Header</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h2 style="margin: 0; color: #333;">Dashboard Pacient</h2>
+                    <div class="dashboard-toggle">
+                        <button type="button" class="btn-toggle-dashboard" data-current-mode="basic" style="background: #0073aa; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-cog"></i> Dashboard Avansat
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-preview">
+                <h3>Enhanced Dashboard Header</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h2 style="margin: 0;">Dashboard Pacient Avansat</h2>
+                    <div class="dashboard-toggle">
+                        <button type="button" class="btn-toggle-dashboard" data-current-mode="enhanced" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-simple"></i> Dashboard Simplu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>JavaScript Status</h2>
+            <div id="js-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Instructions</h2>
+            <ol>
+                <li>Click "Test jQuery" to check if jQuery is loaded</li>
+                <li>Click "Test Toggle Function" to check toggle functionality</li>
+                <li>Click "Test AJAX" to check AJAX functionality</li>
+                <li>Check the results below each test</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        function testJQuery() {
+            const results = document.getElementById("test-results");
+            if (typeof jQuery === "undefined") {
+                results.innerHTML = "<div class=\"error\">❌ jQuery is not loaded</div>";
+            } else {
+                results.innerHTML = "<div class=\"success\">✅ jQuery is loaded (version: " + jQuery.fn.jquery + ")</div>";
+            }
+        }
+        
+        function testToggle() {
+            const results = document.getElementById("test-results");
+            results.innerHTML = "<div class=\"info\">Testing toggle functionality...</div>";
+            
+            // Check if toggle buttons exist
+            const toggleButtons = document.querySelectorAll(".btn-toggle-dashboard");
+            if (toggleButtons.length === 0) {
+                results.innerHTML = "<div class=\"error\">❌ No toggle buttons found</div>";
+                return;
+            }
+            
+            results.innerHTML = "<div class=\"success\">✅ Found " + toggleButtons.length + " toggle button(s)</div>";
+            
+            // Check data-current-mode attributes
+            toggleButtons.forEach((btn, index) => {
+                const mode = btn.getAttribute("data-current-mode");
+                if (mode) {
+                    results.innerHTML += "<div class=\"success\">✅ Button " + (index + 1) + " has data-current-mode: " + mode + "</div>";
+                } else {
+                    results.innerHTML += "<div class=\"error\">❌ Button " + (index + 1) + " missing data-current-mode</div>";
+                }
+            });
+        }
+        
+        function testAJAX() {
+            const results = document.getElementById("test-results");
+            results.innerHTML = "<div class=\"info\">Testing AJAX functionality...</div>";
+            
+            if (typeof jQuery === "undefined") {
+                results.innerHTML = "<div class=\"error\">❌ jQuery not available for AJAX test</div>";
+                return;
+            }
+            
+            // Simulate AJAX call
+            jQuery.ajax({
+                url: window.location.href,
+                type: "POST",
+                data: {
+                    action: "clinica_toggle_dashboard",
+                    nonce: "test_nonce"
+                },
+                success: function(response) {
+                    results.innerHTML = "<div class=\"success\">✅ AJAX request successful</div>";
+                },
+                error: function(xhr, status, error) {
+                    results.innerHTML = "<div class=\"error\">❌ AJAX request failed: " + error + "</div>";
+                }
+            });
+        }
+        
+        // Check JavaScript status on page load
+        window.onload = function() {
+            const jsStatus = document.getElementById("js-status");
+            
+            if (typeof jQuery === "undefined") {
+                jsStatus.innerHTML = "<div class=\"error\">❌ jQuery is not loaded</div>";
+            } else {
+                jsStatus.innerHTML = "<div class=\"success\">✅ jQuery is loaded</div>";
+            }
+            
+            if (typeof clinicaDashboard === "undefined") {
+                jsStatus.innerHTML += "<div class=\"error\">❌ clinicaDashboard object is not available</div>";
+            } else {
+                jsStatus.innerHTML += "<div class=\"success\">✅ clinicaDashboard object is available</div>";
+            }
+        };
+    </script>
+</body>
+</html>

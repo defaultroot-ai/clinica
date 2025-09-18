@@ -1,0 +1,208 @@
+🏥 DIAGRAMA VIZUALĂ - FLUXUL DE CONFIGURARE A SISTEMULUI DE PROGRAMĂRI
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 ETAPA 1: CONFIGURAREA SERVICIILOR
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🩺 CREAREA SERVICIILOR                                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  WordPress Admin → Clinica → Servicii & Programare → Tab "Servicii"        │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  [+ Adaugă Serviciu]                                               │   │
+│  │                                                                     │   │
+│  │  Nume: [Consultatie boala acuta        ]                           │   │
+│  │  Durata: [15] minute                                                 │   │
+│  │  Status: [✅] Activ                                                  │   │
+│  │                                                                     │   │
+│  │  [Salvează Serviciu]                                                │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  REZULTAT: Serviciul este salvat în tabela wp_clinica_services            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+═══════════════════════════════════════════════════════════════════════════════
+
+👨‍⚕️ ETAPA 2: ALOAREA DOCTORILOR LA SERVICII
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🔗 CREAREA ALOACĂRILOR                                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  WordPress Admin → Clinica → Servicii & Programare → Tab "Alocări Doctori" │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  Serviciu: [Consultatie boala acuta ▼]                             │   │
+│  │                                                                     │   │
+│  │  Doctori disponibili:                                               │   │
+│  │  ☐ Coserea Andreea                                                  │   │
+│  │  ☐ Isop Laura                                                       │   │
+│  │  ☐ Lacatus Anca-Maria                                              │   │
+│  │  ☐ Ulieru Claudia                                                   │   │
+│  │                                                                     │   │
+│  │  [Salvează Alocări]                                                │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  REZULTAT: Alocările sunt salvate în tabela wp_clinica_doctor_services    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+═══════════════════════════════════════════════════════════════════════════════
+
+⏰ ETAPA 3: CONFIGURAREA TIMESLOTS-URILOR
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🕐 CREAREA TIMESLOTS-URILOR                                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  WordPress Admin → Clinica → Servicii & Programare → Tab "Timeslots"       │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  Doctor: [Coserea Andreea ▼]                                       │   │
+│  │  Serviciu: [Consultatie boala acuta ▼]                             │   │
+│  │                                                                     │   │
+│  │  📅 Zilele săptămânii:                                              │   │
+│  │  ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐           │   │
+│  │  │ L   │ │ M   │ │ Mi  │ │ J   │ │ V   │ │ S   │ │ D   │           │   │
+│  │  │     │ │     │ │ ✅  │ │     │ │     │ │     │ │     │           │   │
+│  │  └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘           │   │
+│  │                                                                     │   │
+│  │  🕐 Ore: [10:00] - [18:00]                                         │   │
+│  │  ⏱️ Durata slot: [15] minute                                       │   │
+│  │                                                                     │   │
+│  │  [Adaugă Timeslot]                                                 │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  REZULTAT: Timeslot-ul este salvat în tabela wp_clinica_doctor_timeslots  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+═══════════════════════════════════════════════════════════════════════════════
+
+📅 ETAPA 4: GENERAREA CALENDARULUI
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🗓️ LOGICA DE GENERARE A ZILELOR                                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  PENTRU FIECARE ZI ÎN URMĂTOARELE 90 DE ZILE:                              │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  1. Verifică timeslots-urile specifice pentru serviciu              │   │
+│  │     ├── DA: Afișează doar zilele cu timeslots                       │   │
+│  │     └── NU: Nu afișa nicio zi                                       │   │
+│  │                                                                     │   │
+│  │  2. Verifică sărbătorile legale românești                           │   │
+│  │     └── Exclude zilele de sărbătoare                                │   │
+│  │                                                                     │   │
+│  │  3. Verifică concediile doctorului                                  │   │
+│  │     └── Exclude zilele de concediu                                  │   │
+│  │                                                                     │   │
+│  │  4. Calculează programările existente                               │   │
+│  │     └── Verifică dacă ziua este plină                               │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  REZULTAT: Zilele disponibile sunt afișate în calendar                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+═══════════════════════════════════════════════════════════════════════════════
+
+⏱️ ETAPA 5: GENERAREA SLOTURILOR
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🕐 LOGICA DE GENERARE A SLOTURILOR                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  PENTRU O ZI SELECTATĂ:                                                     │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  1. Verifică timeslots-urile specifice pentru zi                    │   │
+│  │     ├── DA: Folosește timeslots-urile specifice                     │   │
+│  │     └── NU: Folosește programul general                             │   │
+│  │                                                                     │   │
+│  │  2. Generează sloturi pe baza:                                      │   │
+│  │     ├── Ora de început (ex: 10:00)                                 │   │
+│  │     ├── Ora de sfârșit (ex: 18:00)                                 │   │
+│  │     ├── Durata slotului (ex: 15 min)                               │   │
+│  │     └── Intervalul între sloturi (ex: 15 min)                      │   │
+│  │                                                                     │   │
+│  │  3. Exclude sloturile ocupate                                       │   │
+│  │  4. Exclude pauzele                                                 │   │
+│  │  5. Returnează sloturile disponibile                                │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  REZULTAT: Sloturile disponibile sunt afișate în dropdown                 │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 REZULTATUL FINAL
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  ✅ SISTEMUL DE PROGRAMĂRI ESTE CONFIGURAT                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  📊 CE FUNCȚIONEAZĂ:                                                       │
+│  ├── Calendarul afișează doar zilele cu timeslots specifice                │
+│  ├── Sloturile se generează automat pe baza timeslots-urilor               │
+│  ├── Sărbătorile legale sunt excluse automat                              │
+│  ├── Concediile doctorului sunt excluse automat                           │
+│  ├── Programările existente sunt excluse din sloturi                      │
+│  └── Sistemul respectă durata serviciului                                 │
+│                                                                             │
+│  🚫 CE NU FUNCȚIONEAZĂ:                                                    │
+│  ├── Doctorii fără timeslots nu afișează zile în calendar                 │
+│  ├── Serviciile inactive nu apar în dropdown-uri                          │
+│  ├── Alocările inactive nu sunt luate în considerare                      │
+│  └── Timeslots-urile inactive nu generează sloturi                        │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔧 EXEMPLE PRACTICE DE CONFIGURARE
+═══════════════════════════════════════════════════════════════════════════════
+
+EXEMPLU 1: Consultatie boala acuta
+───────────────────────────────────────────────────────────────────────────────
+SERVIUL: Consultatie boala acuta
+├── Durata: 15 minute
+├── Doctor: Coserea Andreea
+├── Zile: Miercuri
+├── Ore: 10:00 - 18:00
+└── Sloturi: 10:00, 10:15, 10:30, ..., 17:45
+
+EXEMPLU 2: Vaccinare HPV
+───────────────────────────────────────────────────────────────────────────────
+SERVIUL: Vaccinare HPV
+├── Durata: 30 minute
+├── Doctor: Coserea Andreea
+├── Zile: Joi, Vineri
+├── Ore: 10:00 - 18:00
+└── Sloturi: 10:00, 10:30, 11:00, ..., 17:30
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⚠️ REGULA DE AUR
+═══════════════════════════════════════════════════════════════════════════════
+
+FĂRĂ TIMESLOTS SPECIFICE = NU SE AFIȘEAZĂ ZILE ÎN CALENDAR!
+
+Aceasta este regula fundamentală a sistemului:
+- Dacă un doctor nu are timeslots configurate pentru un serviciu
+- Calendarul nu va afișa nicio zi disponibilă
+- Chiar dacă doctorul are program general de lucru
+- Timeslots-urile specifice au prioritate absolută
+
+═══════════════════════════════════════════════════════════════════════════════

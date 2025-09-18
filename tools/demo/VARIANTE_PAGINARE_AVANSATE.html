@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variante Avansate de Paginare - Dashboard Clinică</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f1f1f1;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .variants-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .variant-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+            overflow: hidden;
+        }
+        
+        .variant-header {
+            background: linear-gradient(135deg, #0073aa, #46b450);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .variant-content {
+            padding: 30px;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+        
+        .demo-card:hover {
+            border-color: #0073aa;
+            box-shadow: 0 4px 12px rgba(0,115,170,0.15);
+        }
+        
+        .demo-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .demo-card p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* VARIANTE DE PAGINARE */
+        
+        /* Varianta 1: Paginare Minimalistă */
+        .pagination-minimal {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            margin: 20px 0;
+        }
+        
+        .pagination-minimal button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .pagination-minimal button:hover {
+            background: #f5f5f5;
+            border-color: #0073aa;
+        }
+        
+        .pagination-minimal button.active {
+            background: #0073aa;
+            color: white;
+            border-color: #0073aa;
+        }
+        
+        .pagination-minimal button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Varianta 2: Paginare cu Dropdown */
+        .pagination-dropdown {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .pagination-dropdown .page-info {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .pagination-dropdown .page-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .pagination-dropdown select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+        
+        /* Varianta 3: Paginare cu Progress Bar */
+        .pagination-progress {
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0073aa, #46b450);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .progress-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .progress-controls button {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        /* Varianta 4: Paginare cu Infinite Scroll */
+        .pagination-infinite {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .infinite-trigger {
+            padding: 15px 30px;
+            background: #0073aa;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .infinite-trigger:hover {
+            background: #005a87;
+            transform: translateY(-2px);
+        }
+        
+        .infinite-loading {
+            display: none;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .infinite-loading.show {
+            display: block;
+        }
+        
+        .loading-dots {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #0073aa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Varianta 5: Paginare cu Filtre Avansate */
+        .pagination-advanced {
+            margin: 20px 0;
+        }
+        
+        .advanced-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-group label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+        }
+        
+        .filter-actions button {
+            padding: 8px 16px;
+            border: 1px solid #0073aa;
+            background: #0073aa;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .filter-actions button.secondary {
+            background: white;
+            color: #0073aa;
+        }
+        
+        /* Varianta 6: Paginare cu View Modes */
+        .pagination-view-modes {
+            margin: 20px 0;
+        }
+        
+        .view-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .view-modes {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .view-mode-btn {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .view-mode-btn.active {
+            background: #0073aa;
+            color: white;
+            border-color: #0073aa;
+        }
+        
+        .view-mode-btn:hover {
+            background: #f5f5f5;
+        }
+        
+        .view-mode-btn.active:hover {
+            background: #005a87;
+        }
+        
+        .view-stats {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* Varianta 7: Paginare cu Quick Jump */
+        .pagination-quick-jump {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .quick-jump-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quick-jump-input input {
+            width: 60px;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .quick-jump-input button {
+            padding: 6px 12px;
+            border: 1px solid #0073aa;
+            background: #0073aa;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        /* Varianta 8: Paginare cu Bulk Actions */
+        .pagination-bulk {
+            margin: 20px 0;
+        }
+        
+        .bulk-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+        }
+        
+        .bulk-selection {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .bulk-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .bulk-actions button {
+            padding: 6px 12px;
+            border: 1px solid #0073aa;
+            background: white;
+            color: #0073aa;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .bulk-actions button:hover {
+            background: #0073aa;
+            color: white;
+        }
+        
+        /* Varianta 9: Paginare cu Search */
+        .pagination-search {
+            margin: 20px 0;
+        }
+        
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            align-items: center;
+        }
+        
+        .search-input {
+            flex: 1;
+            position: relative;
+        }
+        
+        .search-input input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+        }
+        
+        .search-input .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        
+        .search-filters {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-filters select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+        }
+        
+        /* Varianta 10: Paginare cu Export */
+        .pagination-export {
+            margin: 20px 0;
+        }
+        
+        .export-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .export-info {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .export-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .export-actions button {
+            padding: 8px 16px;
+            border: 1px solid #0073aa;
+            background: white;
+            color: #0073aa;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .export-actions button:hover {
+            background: #0073aa;
+            color: white;
+        }
+        
+        .export-actions button.primary {
+            background: #0073aa;
+            color: white;
+        }
+        
+        .export-actions button.primary:hover {
+            background: #005a87;
+        }
+    </style>
+</head>
+<body>
+    <div class="variants-container">
+        <h1 style="text-align: center; color: #0073aa; margin-bottom: 40px;">
+            🚀 Variante Avansate de Paginare pentru Dashboard Clinică
+        </h1>
+        
+        <!-- Varianta 1: Paginare Minimalistă -->
+        <div class="variant-section">
+            <div class="variant-header">
+                <h2>1. Paginare Minimalistă</h2>
+                <p>Design simplu și curat, perfect pentru interfețe moderne</p>
+            </div>
+            <div class="variant-content">
+                                 <div class="demo-grid">
+                     <div class="demo-card">
+                         <h4>Consultatie boala cronica</h4>
+                         <p>20 min - 150 RON</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Counsultatie boala acuta</h4>
+                         <p>15 min - 80 RON</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Vaccinare HPV</h4>
+                         <p>30 min - 200 RON</p>
+                     </div>
+                 </div>
+                
+                <div class="pagination-minimal">
+                    <button disabled>←</button>
+                    <button class="active">1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>4</button>
+                    <button>5</button>
+                    <button>→</button>
+                </div>
+                
+                <div style="text-align: center; color: #666; font-size: 14px; margin-top: 10px;">
+                    Pagina 1 din 5
+                </div>
+            </div>
+        </div>
+        
+        <!-- Varianta 2: Paginare cu Dropdown -->
+        <div class="variant-section">
+            <div class="variant-header">
+                <h2>2. Paginare cu Dropdown</h2>
+                <p>Navigare rapidă la pagina dorită cu dropdown</p>
+            </div>
+            <div class="variant-content">
+                                 <div class="demo-grid">
+                     <div class="demo-card">
+                         <h4>Coserea Andreea</h4>
+                         <p>Medic Generalist - 3 servicii</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Lacatus Anca-Maria</h4>
+                         <p>Medic Generalist - 2 servicii</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Laura Isop</h4>
+                         <p>Medic Generalist - 4 servicii</p>
+                     </div>
+                 </div>
+                
+                <div class="pagination-dropdown">
+                    <div class="page-info">
+                        Afișez doctorii 1-8 din 28 doctori totali
+                    </div>
+                    <div class="page-selector">
+                        <span>Pagina:</span>
+                        <select>
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                        </select>
+                        <span>din 4</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Varianta 3: Paginare cu Progress Bar -->
+        <div class="variant-section">
+            <div class="variant-header">
+                <h2>3. Paginare cu Progress Bar</h2>
+                <p>Vizualizare progres cu bară de progres</p>
+            </div>
+            <div class="variant-content">
+                                 <div class="demo-grid">
+                     <div class="demo-card">
+                         <h4>Luni 09:00</h4>
+                         <p>Coserea Andreea - Consultatie boala cronica</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Luni 09:30</h4>
+                         <p>Lacatus Anca-Maria - Counsultatie boala acuta</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Luni 10:00</h4>
+                         <p>Laura Isop - Vaccinare HPV</p>
+                     </div>
+                 </div>
+                
+                <div class="pagination-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 23%;"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span>Timeslots 25-36 din 156 total</span>
+                        <div class="progress-controls">
+                            <button>← Anterior</button>
+                            <button>Următor →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Varianta 4: Paginare cu Infinite Scroll -->
+        <div class="variant-section">
+            <div class="variant-header">
+                <h2>4. Paginare cu Infinite Scroll</h2>
+                <p>Încărcare automată a conținutului pe măsură ce faci scroll</p>
+            </div>
+            <div class="variant-content">
+                                 <div class="demo-grid">
+                     <div class="demo-card">
+                         <h4>Consultatie boala cronica</h4>
+                         <p>20 min - 150 RON</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Counsultatie boala acuta</h4>
+                         <p>15 min - 80 RON</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Vaccinare HPV</h4>
+                         <p>30 min - 200 RON</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Radiografie Toracică</h4>
+                         <p>20 min - 120 RON</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Consultație de Urmărire</h4>
+                         <p>20 min - 100 RON</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Vaccinare</h4>
+                         <p>10 min - 50 RON</p>
+                     </div>
+                 </div>
+                
+                <div class="pagination-infinite">
+                    <button class="infinite-trigger">Încarcă mai multe servicii</button>
+                    <div class="infinite-loading">
+                        Se încarcă serviciile... <span class="loading-dots"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Varianta 5: Paginare cu Filtre Avansate -->
+        <div class="variant-section">
+            <div class="variant-header">
+                <h2>5. Paginare cu Filtre Avansate</h2>
+                <p>Filtrare și sortare avansată cu paginare</p>
+            </div>
+            <div class="variant-content">
+                <div class="pagination-advanced">
+                    <div class="advanced-filters">
+                                                 <div class="filter-group">
+                             <label>Tip Serviciu</label>
+                             <select>
+                                 <option>Toate serviciile</option>
+                                 <option>Consultații</option>
+                                 <option>Analize</option>
+                                 <option>Imagini medicale</option>
+                                 <option>Vaccinări</option>
+                             </select>
+                         </div>
+                        <div class="filter-group">
+                            <label>Status</label>
+                            <select>
+                                <option>Toate</option>
+                                <option>Activ</option>
+                                <option>Inactiv</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Sortare</label>
+                            <select>
+                                <option>Nume A-Z</option>
+                                <option>Nume Z-A</option>
+                                <option>Data creării</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions">
+                            <button>Aplică filtrele</button>
+                            <button class="secondary">Resetează</button>
+                        </div>
+                    </div>
+                </div>
+                
+                                 <div class="demo-grid">
+                     <div class="demo-card">
+                         <h4>Coserea Andreea</h4>
+                         <p>Medic Generalist - Activ</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Lacatus Anca-Maria</h4>
+                         <p>Medic Generalist - Activ</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Laura Isop</h4>
+                         <p>Medic Generalist - Activ</p>
+                     </div>
+                 </div>
+                
+                <div class="pagination-minimal">
+                    <button disabled>←</button>
+                    <button class="active">1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>→</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Varianta 6: Paginare cu View Modes -->
+        <div class="variant-section">
+            <div class="variant-header">
+                <h2>6. Paginare cu View Modes</h2>
+                <p>Schimbare între diferite moduri de afișare</p>
+            </div>
+            <div class="variant-content">
+                <div class="pagination-view-modes">
+                    <div class="view-controls">
+                        <div class="view-modes">
+                            <button class="view-mode-btn active">📋 Listă</button>
+                            <button class="view-mode-btn">🔲 Grid</button>
+                            <button class="view-mode-btn">📊 Tabel</button>
+                        </div>
+                        <div class="view-stats">
+                            12 servicii afișate
+                        </div>
+                    </div>
+                </div>
+                
+                                 <div class="demo-grid">
+                     <div class="demo-card">
+                         <h4>Consultatie boala cronica</h4>
+                         <p>30 min - 3 doctori</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Counsultatie boala acuta</h4>
+                         <p>15 min - 2 doctori</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Vaccinare HPV</h4>
+                         <p>45 min - 1 doctor</p>
+                     </div>
+                 </div>
+                
+                <div class="pagination-minimal">
+                    <button disabled>←</button>
+                    <button class="active">1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>→</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Varianta 7: Paginare cu Quick Jump -->
+        <div class="variant-section">
+            <div class="variant-header">
+                <h2>7. Paginare cu Quick Jump</h2>
+                <p>Sări rapid la pagina dorită</p>
+            </div>
+            <div class="variant-content">
+                                 <div class="demo-grid">
+                     <div class="demo-card">
+                         <h4>Luni 09:00</h4>
+                         <p>Coserea Andreea</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Luni 09:30</h4>
+                         <p>Lacatus Anca-Maria</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Luni 10:00</h4>
+                         <p>Laura Isop</p>
+                     </div>
+                 </div>
+                
+                <div class="pagination-quick-jump">
+                    <button disabled>← Anterior</button>
+                    <button>1</button>
+                    <button>2</button>
+                    <button class="active">3</button>
+                    <button>4</button>
+                    <button>5</button>
+                    <button>Următor →</button>
+                    <div class="quick-jump-input">
+                        <span>Sari la:</span>
+                        <input type="number" value="3" min="1" max="13">
+                        <button>Go</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Varianta 8: Paginare cu Bulk Actions -->
+        <div class="variant-section">
+            <div class="variant-header">
+                <h2>8. Paginare cu Bulk Actions</h2>
+                <p>Operații în masă cu selecție multiplă</p>
+            </div>
+            <div class="variant-content">
+                <div class="pagination-bulk">
+                    <div class="bulk-controls">
+                        <div class="bulk-selection">
+                            <div class="bulk-checkbox">
+                                <input type="checkbox" id="select-all">
+                                <label for="select-all">Selectează toate</label>
+                            </div>
+                            <span>3 servicii selectate</span>
+                        </div>
+                        <div class="bulk-actions">
+                            <button>Editare în masă</button>
+                            <button>Șterge selectate</button>
+                            <button>Export selectate</button>
+                        </div>
+                    </div>
+                </div>
+                
+                                 <div class="demo-grid">
+                     <div class="demo-card">
+                         <h4>✅ Consultatie boala cronica</h4>
+                         <p>30 min - 3 doctori</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>✅ Counsultatie boala acuta</h4>
+                         <p>15 min - 2 doctori</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>✅ Vaccinare HPV</h4>
+                         <p>45 min - 1 doctor</p>
+                     </div>
+                 </div>
+                
+                <div class="pagination-minimal">
+                    <button disabled>←</button>
+                    <button class="active">1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>→</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Varianta 9: Paginare cu Search -->
+        <div class="variant-section">
+            <div class="variant-header">
+                <h2>9. Paginare cu Search</h2>
+                <p>Căutare în timp real cu paginare</p>
+            </div>
+            <div class="variant-content">
+                <div class="pagination-search">
+                    <div class="search-controls">
+                        <div class="search-input">
+                            <input type="text" placeholder="Caută servicii, doctori sau timeslots...">
+                            <span class="search-icon">🔍</span>
+                        </div>
+                        <div class="search-filters">
+                            <select>
+                                <option>Toate</option>
+                                <option>Servicii</option>
+                                <option>Doctori</option>
+                                <option>Timeslots</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                                 <div class="demo-grid">
+                     <div class="demo-card">
+                         <h4>Consultatie boala cronica</h4>
+                         <p>30 min - 3 doctori</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Consultație de Urmărire</h4>
+                         <p>20 min - 1 doctor</p>
+                     </div>
+                 </div>
+                
+                <div class="pagination-minimal">
+                    <button disabled>←</button>
+                    <button class="active">1</button>
+                    <button>2</button>
+                    <button>→</button>
+                </div>
+                
+                <div style="text-align: center; color: #666; font-size: 14px; margin-top: 10px;">
+                    2 rezultate găsite pentru "consultație"
+                </div>
+            </div>
+        </div>
+        
+        <!-- Varianta 10: Paginare cu Export -->
+        <div class="variant-section">
+            <div class="variant-header">
+                <h2>10. Paginare cu Export</h2>
+                <p>Export de date cu opțiuni de paginare</p>
+            </div>
+            <div class="variant-content">
+                <div class="pagination-export">
+                    <div class="export-controls">
+                        <div class="export-info">
+                            Afișez serviciile 1-10 din 45 servicii totale
+                        </div>
+                        <div class="export-actions">
+                            <button>📄 PDF</button>
+                            <button>📊 Excel</button>
+                            <button class="primary">📋 Export toate</button>
+                        </div>
+                    </div>
+                </div>
+                
+                                 <div class="demo-grid">
+                     <div class="demo-card">
+                         <h4>Consultatie boala cronica</h4>
+                         <p>30 min - 3 doctori</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Counsultatie boala acuta</h4>
+                         <p>15 min - 2 doctori</p>
+                     </div>
+                     <div class="demo-card">
+                         <h4>Vaccinare HPV</h4>
+                         <p>45 min - 1 doctor</p>
+                     </div>
+                 </div>
+                
+                <div class="pagination-minimal">
+                    <button disabled>←</button>
+                    <button class="active">1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>4</button>
+                    <button>5</button>
+                    <button>→</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simulare funcționalitate pentru variante
+        document.addEventListener('DOMContentLoaded', function() {
+            // Infinite scroll simulation
+            const infiniteTrigger = document.querySelector('.infinite-trigger');
+            const infiniteLoading = document.querySelector('.infinite-loading');
+            
+            if (infiniteTrigger && infiniteLoading) {
+                infiniteTrigger.addEventListener('click', function() {
+                    this.style.display = 'none';
+                    infiniteLoading.classList.add('show');
+                    
+                    setTimeout(() => {
+                        infiniteLoading.classList.remove('show');
+                        infiniteTrigger.style.display = 'inline-block';
+                        infiniteTrigger.textContent = 'Încarcă mai multe servicii (6 noi)';
+                    }, 2000);
+                });
+            }
+            
+            // Quick jump simulation
+            const quickJumpInput = document.querySelector('.quick-jump-input input');
+            const quickJumpBtn = document.querySelector('.quick-jump-input button');
+            
+            if (quickJumpInput && quickJumpBtn) {
+                quickJumpBtn.addEventListener('click', function() {
+                    const page = quickJumpInput.value;
+                    if (page >= 1 && page <= 13) {
+                        alert('Sări la pagina ' + page);
+                    } else {
+                        alert('Pagina trebuie să fie între 1 și 13');
+                    }
+                });
+            }
+            
+            // Bulk actions simulation
+            const selectAllCheckbox = document.getElementById('select-all');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    const cards = document.querySelectorAll('.demo-card');
+                    cards.forEach(card => {
+                        const title = card.querySelector('h4');
+                        if (this.checked) {
+                            title.textContent = '✅ ' + title.textContent.replace('✅ ', '');
+                        } else {
+                            title.textContent = title.textContent.replace('✅ ', '');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

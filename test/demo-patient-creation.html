@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinica - Creare Pacient Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .breadcrumb {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f8f9fa;
+            padding: 20px 25px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-header i {
+            color: #3498db;
+            font-size: 1.2em;
+        }
+
+        .section-header h3 {
+            color: #2c3e50;
+            font-size: 1.3em;
+        }
+
+        .section-content {
+            padding: 25px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group label.required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-group input:disabled,
+        .form-group select:disabled {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .form-group small {
+            color: #6c757d;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        .validation-message {
+            margin-top: 5px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .validation-message.success {
+            color: #27ae60;
+        }
+
+        .validation-message.error {
+            color: #e74c3c;
+        }
+
+        .validation-message.warning {
+            color: #f39c12;
+        }
+
+        .password-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .password-options {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .password-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .password-option input[type="radio"] {
+            margin: 0;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .demo-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .demo-info h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .demo-info ul {
+            margin-left: 20px;
+        }
+
+        .demo-info li {
+            margin-bottom: 5px;
+            color: #424242;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .password-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-hospital"></i> Clinica Medicală</h1>
+            <p>Sistem de Gestionare Pacienți - Demo Creare Pacient</p>
+        </div>
+
+        <div class="breadcrumb">
+            <a href="#"><i class="fas fa-home"></i> Dashboard</a> > 
+            <a href="#"><i class="fas fa-users"></i> Pacienți</a> > 
+            <span><i class="fas fa-user-plus"></i> Creare Pacient</span>
+        </div>
+
+        <div class="form-container">
+            <div class="demo-info">
+                <h4><i class="fas fa-info-circle"></i> Informații Demo</h4>
+                <ul>
+                    <li><strong>CNP-uri de test:</strong> 1234567890123 (român), 0234567890123 (străin permanent), 9234567890123 (străin temporar)</li>
+                    <li><strong>Validare în timp real:</strong> CNP-ul se validează automat la introducere</li>
+                    <li><strong>Completare automată:</strong> Data nașterii, sexul și vârsta se completează din CNP</li>
+                    <li><strong>Generare parole:</strong> Opțiuni pentru generarea automată a parolei</li>
+                    <li><strong>Acces restricționat:</strong> Doar personal medical poate crea pacienți</li>
+                </ul>
+            </div>
+
+            <form id="patientForm" class="patient-creation-form">
+                <!-- Secțiunea de Identificare -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-id-card"></i>
+                        <h3>Informații de Identificare</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cnp" class="required">
+                                    <i class="fas fa-fingerprint"></i>
+                                    CNP
+                                </label>
+                                <input type="text" id="cnp" name="cnp" maxlength="13" required 
+                                       pattern="[0-9]{13}" title="CNP-ul trebuie să conțină exact 13 cifre"
+                                       placeholder="Ex: 1234567890123">
+                                <small>CNP-ul va fi folosit ca username pentru autentificare</small>
+                                <div id="cnp-validation" class="validation-message"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="last_name" class="required">
+                                    <i class="fas fa-user"></i>
+                                    Nume
+                                </label>
+                                <input type="text" id="last_name" name="last_name" required
+                                       placeholder="Ex: Popescu">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="first_name" class="required">
+                                    <i class="fas fa-user"></i>
+                                    Prenume
+                                </label>
+                                <input type="text" id="first_name" name="first_name" required
+                                       placeholder="Ex: Ion">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secțiunea de Contact -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-address-book"></i>
+                        <h3>Informații de Contact</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">
+                                    <i class="fas fa-envelope"></i>
+                                    Adresa de Email
+                                </label>
+                                <input type="email" id="email" name="email"
+                                       placeholder="Ex: ion.popescu@email.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="phone_primary">
+                                    <i class="fas fa-phone"></i>
+                                    Telefon Principal
+                                </label>
+                                <input type="tel" id="phone_primary" name="phone_primary"
+                                       placeholder="Ex: 0722123456">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="phone_secondary">
+                                    <i class="fas fa-phone"></i>
+                                    Telefon Secundar
+                                </label>
+                                <input type="tel" id="phone_secondary" name="phone_secondary"
+                                       placeholder="Ex: 0211234567">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secțiunea Personală -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-user-circle"></i>
+                        <h3>Informații Personale</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="birth_date">
+                                    <i class="fas fa-calendar"></i>
+                                    Data Nașterii
+                                </label>
+                                <input type="date" id="birth_date" name="birth_date" readonly>
+                                <small>Completat automat din CNP</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="gender">
+                                    <i class="fas fa-venus-mars"></i>
+                                    Sex
+                                </label>
+                                <select id="gender" name="gender" disabled>
+                                    <option value="">Selectează</option>
+                                    <option value="male">Masculin</option>
+                                    <option value="female">Feminin</option>
+                                </select>
+                                <small>Completat automat din CNP</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="age">
+                                    <i class="fas fa-birthday-cake"></i>
+                                    Vârsta
+                                </label>
+                                <input type="number" id="age" name="age" readonly>
+                                <small>Calculată automat</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secțiunea de Parolă -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-key"></i>
+                        <h3>Generare Parolă</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="password_method">
+                                    <i class="fas fa-cog"></i>
+                                    Metoda de generare parolă
+                                </label>
+                                <select id="password_method" name="password_method">
+                                    <option value="cnp">Primele 6 cifre ale CNP-ului</option>
+                                    <option value="birth_date">Data nașterii (dd.mm.yyyy)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="generated_password">
+                                    <i class="fas fa-lock"></i>
+                                    Parola Generată
+                                </label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" id="generated_password" name="generated_password" readonly>
+                                    <button type="button" id="regenerate_password" class="btn btn-secondary">
+                                        <i class="fas fa-sync-alt"></i>
+                                        Regenerează
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secțiunea Medicală -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-stethoscope"></i>
+                        <h3>Informații Medicale</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="blood_type">
+                                    <i class="fas fa-tint"></i>
+                                    Grupa Sanguină
+                                </label>
+                                <select id="blood_type" name="blood_type">
+                                    <option value="">Selectează</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="allergies">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Alergii
+                                </label>
+                                <input type="text" id="allergies" name="allergies" 
+                                       placeholder="Ex: penicilină, praf, etc.">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="medical_history">
+                                <i class="fas fa-notes-medical"></i>
+                                Istoric Medical
+                            </label>
+                            <textarea id="medical_history" name="medical_history" rows="4" 
+                                      placeholder="Boli cronice, intervenții chirurgicale, etc."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Creează Pacient
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-undo"></i>
+                        Resetează
+                    </button>
+                    <a href="demo-login.html" class="btn btn-success">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Demo Autentificare
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Simulare API endpoints
+        const API_BASE = '/wp-json/clinica/v1';
+        
+        // Validare CNP în timp real
+        document.getElementById('cnp').addEventListener('input', function(e) {
+            const cnp = e.target.value;
+            const validationDiv = document.getElementById('cnp-validation');
+            
+            if (cnp.length === 13) {
+                validationDiv.innerHTML = '<div class="loading"></div> Validare CNP...';
+                
+                // Simulare validare CNP
+                setTimeout(() => {
+                    const result = validateCNP(cnp);
+                    if (result.valid) {
+                        validationDiv.innerHTML = `<span class="success">✓ CNP valid (${result.type})</span>`;
+                        fillAutoFields(cnp);
+                    } else {
+                        validationDiv.innerHTML = `<span class="error">✗ ${result.error}</span>`;
+                    }
+                }, 1000);
+            } else {
+                validationDiv.innerHTML = '';
+            }
+        });
+        
+        // Funcție de validare CNP (simulată)
+        function validateCNP(cnp) {
+            if (!/^\d{13}$/.test(cnp)) {
+                return { valid: false, error: 'CNP-ul trebuie să conțină exact 13 cifre' };
+            }
+            
+            const firstDigit = cnp[0];
+            let type = '';
+            
+            if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(firstDigit)) {
+                type = 'român';
+            } else if (firstDigit === '0') {
+                type = 'străin permanent';
+            } else if (firstDigit === '9') {
+                type = 'străin temporar';
+            } else {
+                return { valid: false, error: 'Tip de CNP necunoscut' };
+            }
+            
+            // Simulare validare algoritm matematic
+            const controlDigits = [2, 7, 9, 1, 4, 6, 3, 5, 8, 2, 7, 9];
+            let sum = 0;
+            
+            for (let i = 0; i < 12; i++) {
+                sum += parseInt(cnp[i]) * controlDigits[i];
+            }
+            
+            const controlDigit = sum % 11;
+            const expectedControl = controlDigit === 10 ? 1 : controlDigit;
+            
+            if (parseInt(cnp[12]) !== expectedControl) {
+                return { valid: false, error: `CNP ${type} invalid` };
+            }
+            
+            return { valid: true, type: type };
+        }
+        
+        // Completează câmpurile automat
+        function fillAutoFields(cnp) {
+            const birthDate = extractBirthDate(cnp);
+            const gender = extractGender(cnp);
+            const age = calculateAge(birthDate);
+            
+            document.getElementById('birth_date').value = birthDate;
+            document.getElementById('gender').value = gender;
+            document.getElementById('age').value = age;
+            
+            // Generează parola
+            generatePassword();
+        }
+        
+        // Extrage data nașterii din CNP
+        function extractBirthDate(cnp) {
+            const year = cnp.substring(1, 3);
+            const month = cnp.substring(3, 5);
+            const day = cnp.substring(5, 7);
+            
+            // Determină secolul
+            const firstDigit = cnp[0];
+            let century = '20';
+            
+            if (['1', '2'].includes(firstDigit)) {
+                century = '19';
+            } else if (['3', '4'].includes(firstDigit)) {
+                century = '18';
+            } else if (['5', '6'].includes(firstDigit)) {
+                century = '20';
+            } else if (['7', '8'].includes(firstDigit)) {
+                century = '19';
+            }
+            
+            return `${century}${year}-${month}-${day}`;
+        }
+        
+        // Extrage sexul din CNP
+        function extractGender(cnp) {
+            const firstDigit = cnp[0];
+            
+            if (['1', '3', '5', '7', '9'].includes(firstDigit)) {
+                return 'male';
+            } else {
+                return 'female';
+            }
+        }
+        
+        // Calculează vârsta
+        function calculateAge(birthDate) {
+            const birth = new Date(birthDate);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+        
+        // Generează parola
+        function generatePassword() {
+            const cnp = document.getElementById('cnp').value;
+            const birthDate = document.getElementById('birth_date').value;
+            const method = document.getElementById('password_method').value;
+            
+            if (!cnp || !birthDate) return;
+            
+            let password = '';
+            
+            if (method === 'cnp') {
+                password = cnp.substring(0, 6);
+            } else {
+                const date = new Date(birthDate);
+                const formatted = date.toLocaleDateString('ro-RO');
+                password = formatted; // Păstrează punctele: dd.mm.yyyy
+            }
+            
+            document.getElementById('generated_password').value = password;
+        }
+        
+        // Regenerează parola
+        document.getElementById('regenerate_password').addEventListener('click', generatePassword);
+        document.getElementById('password_method').addEventListener('change', generatePassword);
+        
+        // Resetează formularul
+        function resetForm() {
+            document.getElementById('patientForm').reset();
+            document.getElementById('cnp-validation').innerHTML = '';
+            document.getElementById('birth_date').readOnly = true;
+            document.getElementById('gender').disabled = true;
+            document.getElementById('age').readOnly = true;
+            document.getElementById('generated_password').value = '';
+        }
+        
+        // Submit formular
+        document.getElementById('patientForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Simulare creare pacient
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<div class="loading"></div> Creare pacient...';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                // Simulare succes
+                showAlert('Pacientul a fost creat cu succes! Credențialele au fost trimise pe email.', 'success');
+                resetForm();
+                
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
+        });
+        
+        // Funcție pentru afișarea alertelor
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            const formContainer = document.querySelector('.form-container');
+            formContainer.insertBefore(alertDiv, formContainer.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // Demo CNP-uri pentru testare
+        function fillDemoData() {
+            const demoCNPs = [
+                '1234567890123', // Român
+                '0234567890123', // Străin permanent
+                '9234567890123'  // Străin temporar
+            ];
+            
+            const randomCNP = demoCNPs[Math.floor(Math.random() * demoCNPs.length)];
+            document.getElementById('cnp').value = randomCNP;
+            document.getElementById('cnp').dispatchEvent(new Event('input'));
+            
+            document.getElementById('last_name').value = 'Demo';
+            document.getElementById('first_name').value = 'Pacient';
+            document.getElementById('email').value = 'demo.pacient@email.com';
+            document.getElementById('phone_primary').value = '0722123456';
+        }
+        
+        // Adaugă buton pentru demo data
+        const demoBtn = document.createElement('button');
+        demoBtn.type = 'button';
+        demoBtn.className = 'btn btn-secondary';
+        demoBtn.innerHTML = '<i class="fas fa-magic"></i> Completează Date Demo';
+        demoBtn.onclick = fillDemoData;
+        
+        const formActions = document.querySelector('.form-actions');
+        formActions.appendChild(demoBtn);
+    </script>
+</body>
+</html> 

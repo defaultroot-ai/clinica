@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinica - Autentificare Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .login-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-form {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-group .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            transition: color 0.3s ease;
+        }
+
+        .form-group input:focus + .input-icon {
+            color: #3498db;
+        }
+
+        .login-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .forgot-password {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .login-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e9ecef;
+        }
+
+        .login-divider span {
+            background: white;
+            padding: 0 20px;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .demo-credentials {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .demo-credentials h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1em;
+        }
+
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .credential-item:last-child {
+            border-bottom: none;
+        }
+
+        .credential-label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9em;
+        }
+
+        .credential-value {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #495057;
+        }
+
+        .copy-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.8em;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #5a6268;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .role-selector {
+            margin-bottom: 25px;
+        }
+
+        .role-selector label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .role-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .role-btn {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .role-btn:hover {
+            border-color: #3498db;
+            background: #f8f9fa;
+        }
+
+        .role-btn.active {
+            border-color: #3498db;
+            background: #3498db;
+            color: white;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 10px;
+            }
+            
+            .login-form {
+                padding: 30px 20px;
+            }
+            
+            .role-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-icon">
+                <i class="fas fa-hospital"></i>
+            </div>
+            <h1>Clinica</h1>
+            <p>Sistem de Gestionare Medicală</p>
+        </div>
+
+        <div class="login-form">
+            <div class="demo-credentials">
+                <h4><i class="fas fa-info-circle"></i> Credențiale Demo</h4>
+                <div class="credential-item">
+                    <span class="credential-label">Pacient:</span>
+                    <span class="credential-value">1234567890123</span>
+                    <button class="copy-btn" onclick="copyToClipboard('1234567890123')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="credential-item">
+                    <span class="credential-label">Parolă pacient:</span>
+                    <span class="credential-value">123456</span>
+                    <button class="copy-btn" onclick="copyToClipboard('123456')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="credential-item">
+                    <span class="credential-label">Doctor:</span>
+                    <span class="credential-value">dr.popescu</span>
+                    <button class="copy-btn" onclick="copyToClipboard('dr.popescu')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="credential-item">
+                    <span class="credential-label">Receptionist:</span>
+                    <span class="credential-value">receptionist</span>
+                    <button class="copy-btn" onclick="copyToClipboard('receptionist')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="role-selector">
+                <label>Selectează rolul pentru demo:</label>
+                <div class="role-buttons">
+                    <button class="role-btn" data-role="patient" onclick="selectRole('patient')">
+                        <i class="fas fa-user"></i> Pacient
+                    </button>
+                    <button class="role-btn" data-role="doctor" onclick="selectRole('doctor')">
+                        <i class="fas fa-user-md"></i> Doctor
+                    </button>
+                    <button class="role-btn" data-role="receptionist" onclick="selectRole('receptionist')">
+                        <i class="fas fa-user-tie"></i> Receptionist
+                    </button>
+                    <button class="role-btn" data-role="manager" onclick="selectRole('manager')">
+                        <i class="fas fa-user-cog"></i> Manager
+                    </button>
+                </div>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i>
+                        Username / CNP / Email
+                    </label>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="Introduceți username, CNP sau email">
+                    <i class="fas fa-user input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        Parolă
+                    </label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Introduceți parola">
+                    <i class="fas fa-lock input-icon"></i>
+                </div>
+
+                <div class="login-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember" id="remember">
+                        <span>Ține-mă minte</span>
+                    </label>
+                    <a href="#" class="forgot-password">Parolă uitată?</a>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Autentificare
+                </button>
+            </form>
+
+            <div class="login-divider">
+                <span>sau</span>
+            </div>
+
+            <div style="text-align: center;">
+                <p style="color: #6c757d; margin-bottom: 15px;">Autentificare rapidă cu CNP</p>
+                <button class="btn-login" onclick="quickLogin()" style="background: #27ae60;">
+                    <i class="fas fa-id-card"></i>
+                    Autentificare cu CNP
+                </button>
+            </div>
+
+            <div class="back-link">
+                <a href="demo-patient-creation.html">
+                    <i class="fas fa-arrow-left"></i>
+                    Înapoi la Creare Pacient
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = 'patient';
+        
+        // Selectare rol
+        function selectRole(role) {
+            selectedRole = role;
+            
+            // Actualizează butoanele
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-role="${role}"]`).classList.add('active');
+            
+            // Completează automat credențialele
+            fillCredentials(role);
+        }
+        
+        // Completează credențialele în funcție de rol
+        function fillCredentials(role) {
+            const credentials = {
+                patient: {
+                    username: '1234567890123',
+                    password: '123456'
+                },
+                doctor: {
+                    username: 'dr.popescu',
+                    password: 'doctor123!'
+                },
+                receptionist: {
+                    username: 'receptionist',
+                    password: 'reception123!'
+                },
+                manager: {
+                    username: 'manager',
+                    password: 'manager123!'
+                }
+            };
+            
+            document.getElementById('username').value = credentials[role].username;
+            document.getElementById('password').value = credentials[role].password;
+        }
+        
+        // Copiază în clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert('Copiat în clipboard!', 'success');
+            }).catch(() => {
+                showAlert('Nu s-a putut copia în clipboard', 'error');
+            });
+        }
+        
+        // Autentificare rapidă cu CNP
+        function quickLogin() {
+            const cnp = prompt('Introduceți CNP-ul pentru autentificare rapidă:');
+            if (cnp) {
+                document.getElementById('username').value = cnp;
+                document.getElementById('password').value = cnp.substring(0, 6);
+                showAlert('CNP completat! Apăsați Autentificare pentru a continua.', 'success');
+            }
+        }
+        
+        // Submit formular
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            // Validare de bază
+            if (!username || !password) {
+                showAlert('Vă rugăm să completați toate câmpurile!', 'error');
+                return;
+            }
+            
+            // Simulare autentificare
+            const loginBtn = document.getElementById('loginBtn');
+            const originalText = loginBtn.innerHTML;
+            
+            loginBtn.innerHTML = '<div class="loading"></div> Autentificare...';
+            loginBtn.disabled = true;
+            
+            setTimeout(() => {
+                // Simulare verificare credențiale
+                const isValid = validateCredentials(username, password);
+                
+                if (isValid) {
+                    showAlert(`Autentificare reușită! Bun venit, ${getUserDisplayName(username)}!`, 'success');
+                    
+                    // Simulare redirect
+                    setTimeout(() => {
+                        showDashboard(username);
+                    }, 1500);
+                } else {
+                    showAlert('Credențiale incorecte! Vă rugăm să verificați username-ul și parola.', 'error');
+                }
+                
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+            }, 2000);
+        });
+        
+        // Validare credențiale (simulată)
+        function validateCredentials(username, password) {
+            const validCredentials = {
+                '1234567890123': '123456',
+                'dr.popescu': 'doctor123!',
+                'receptionist': 'reception123!',
+                'manager': 'manager123!'
+            };
+            
+            return validCredentials[username] === password;
+        }
+        
+        // Obține numele de afișare
+        function getUserDisplayName(username) {
+            const names = {
+                '1234567890123': 'Pacient Demo',
+                'dr.popescu': 'Dr. Popescu',
+                'receptionist': 'Receptionist',
+                'manager': 'Manager'
+            };
+            
+            return names[username] || username;
+        }
+        
+        // Afișează dashboard-ul
+        function showDashboard(username) {
+            const dashboardHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                    <p>Bun venit, ${getUserDisplayName(username)}!</p>
+                    <div style="margin-top: 30px;">
+                        <button onclick="location.reload()" class="btn-login" style="width: auto; margin: 10px;">
+                            <i class="fas fa-sign-out-alt"></i> Deconectare
+                        </button>
+                        <button onclick="location.href='demo-patient-creation.html'" class="btn-login" style="width: auto; margin: 10px; background: #27ae60;">
+                            <i class="fas fa-user-plus"></i> Creare Pacient
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.querySelector('.login-container').innerHTML = dashboardHTML;
+        }
+        
+        // Funcție pentru afișarea alertelor
+        function showAlert(message, type) {
+            // Elimină alertele existente
+            const existingAlerts = document.querySelectorAll('.alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            const loginForm = document.querySelector('.login-form');
+            loginForm.insertBefore(alertDiv, loginForm.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // Inițializare
+        document.addEventListener('DOMContentLoaded', function() {
+            // Selectează rolul pacient implicit
+            selectRole('patient');
+            
+            // Adaugă funcționalitate pentru afișarea/ascunderea parolei
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = passwordInput.nextElementSibling;
+            
+            passwordIcon.addEventListener('click', function() {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    passwordIcon.className = 'fas fa-eye-slash input-icon';
+                } else {
+                    passwordInput.type = 'password';
+                    passwordIcon.className = 'fas fa-lock input-icon';
+                }
+            });
+            
+            passwordIcon.style.cursor = 'pointer';
+        });
+        
+        // Funcționalitate pentru Enter key
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html> 

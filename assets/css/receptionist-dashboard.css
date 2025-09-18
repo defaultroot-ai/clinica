@@ -1,0 +1,596 @@
+/* Receptionist Dashboard Styles */
+.clinica-receptionist-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Extinde și centrează pagina la 1600px când există dashboard-ul de recepție (identic cu Doctor/Asistent) */
+body:has(.clinica-receptionist-dashboard) .page-content,
+body:has(.clinica-receptionist-dashboard) article.post,
+body:has(.clinica-receptionist-dashboard) .entry-content,
+body:has(.clinica-receptionist-dashboard) .content-area,
+body:has(.clinica-receptionist-dashboard) .site-main,
+body:has(.clinica-receptionist-dashboard) .site-content,
+body:has(.clinica-receptionist-dashboard) .page-container {
+    max-width: 1600px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+/* Fixează dashboard-ul la 1600px și centrează-l */
+body:has(.clinica-receptionist-dashboard) .clinica-receptionist-dashboard {
+    max-width: 1600px !important;
+    width: 1600px !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+}
+
+/* Extinde container-ele majore la 1600px */
+.clinica-receptionist-stats,
+.clinica-receptionist-tabs,
+.clinica-receptionist-tab-content {
+    width: 1600px;
+    max-width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Să nu taie umbrele */
+.clinica-receptionist-tabs { overflow: visible; }
+
+/* Header */
+.clinica-receptionist-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.clinica-receptionist-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.clinica-receptionist-header h1 {
+    margin: 0 0 10px 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+
+.clinica-receptionist-header p {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+}
+
+/* Quick Stats */
+.clinica-receptionist-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.clinica-receptionist-stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.clinica-receptionist-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.clinica-receptionist-stat-card h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.clinica-receptionist-stat-card .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #667eea;
+    margin: 0;
+}
+
+.clinica-receptionist-stat-card .stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* Tabs */
+.clinica-receptionist-tabs {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.clinica-receptionist-tab-nav {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.clinica-receptionist-tab-button {
+    flex: 1;
+    padding: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.clinica-receptionist-tab-button:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.clinica-receptionist-tab-button.active {
+    background: white;
+    color: #667eea;
+    border-bottom: 3px solid #667eea;
+}
+
+.clinica-receptionist-tab-button .tab-icon {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+/* Tab Content */
+.clinica-receptionist-tab-content {
+    display: none;
+    padding: 30px;
+}
+
+.clinica-receptionist-tab-content.active {
+    display: block;
+}
+
+/* Action Buttons */
+.clinica-receptionist-actions {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.clinica-receptionist-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.clinica-receptionist-btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.clinica-receptionist-btn-primary:hover {
+    background: #5a6fd8;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.clinica-receptionist-btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.clinica-receptionist-btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.clinica-receptionist-btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.clinica-receptionist-btn-success:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.clinica-receptionist-btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.clinica-receptionist-btn-danger:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+/* Forms */
+.clinica-receptionist-form {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.clinica-receptionist-form h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.clinica-receptionist-form-group {
+    margin-bottom: 20px;
+}
+
+.clinica-receptionist-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.clinica-receptionist-form-group input,
+.clinica-receptionist-form-group select,
+.clinica-receptionist-form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.clinica-receptionist-form-group input:focus,
+.clinica-receptionist-form-group select:focus,
+.clinica-receptionist-form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.clinica-receptionist-form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* Tables */
+.clinica-receptionist-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.clinica-receptionist-table th,
+.clinica-receptionist-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.clinica-receptionist-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.clinica-receptionist-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* Status Badges */
+.clinica-receptionist-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.clinica-receptionist-status.confirmed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.clinica-receptionist-status.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.clinica-receptionist-status.cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Search and Filters */
+.clinica-receptionist-search {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.clinica-receptionist-search input {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.clinica-receptionist-search select {
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .clinica-receptionist-dashboard {
+        padding: 15px;
+    }
+    
+    .clinica-receptionist-header {
+        padding: 20px;
+    }
+    
+    .clinica-receptionist-header h1 {
+        font-size: 2rem;
+    }
+    
+    .clinica-receptionist-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .clinica-receptionist-tab-nav {
+        flex-direction: column;
+    }
+    
+    .clinica-receptionist-tab-button {
+        text-align: left;
+    }
+    
+    .clinica-receptionist-actions {
+        flex-direction: column;
+    }
+    
+    .clinica-receptionist-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .clinica-receptionist-form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .clinica-receptionist-search {
+        flex-direction: column;
+    }
+    
+    .clinica-receptionist-table {
+        font-size: 0.9rem;
+    }
+    
+    .clinica-receptionist-table th,
+    .clinica-receptionist-table td {
+        padding: 10px;
+    }
+}
+
+/* Loading States */
+.clinica-receptionist-loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.clinica-receptionist-loading::after {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e9ecef;
+    border-radius: 50%;
+    border-top-color: #667eea;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Notifications */
+.clinica-receptionist-notification {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.clinica-receptionist-notification.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.clinica-receptionist-notification.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.clinica-receptionist-notification.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* Modal Styles */
+.clinica-receptionist-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+}
+.clinica-receptionist-modal.show { display: flex !important; }
+.clinica-receptionist-modal-content {
+    margin: auto;
+    background: #fff;
+    border-radius: 8px;
+    max-width: 800px;
+    width: 95%;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+    padding: 30px 20px;
+    position: relative;
+}
+
+/* Asigură-te că vechiul stil nu suprascrie modalul */
+@media (max-width: 600px) {
+  .clinica-receptionist-modal-content {
+    padding: 10px 5px;
+    max-width: 98vw;
+  }
+}
+
+.clinica-receptionist-modal-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.clinica-receptionist-modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.clinica-receptionist-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.clinica-receptionist-modal-close:hover {
+    background: #f8f9fa;
+    color: #333;
+}
+
+.clinica-receptionist-modal-body {
+    padding: 30px;
+}
+
+.clinica-receptionist-modal-footer {
+    padding: 20px 30px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+/* Keyboard Shortcuts */
+.clinica-receptionist-shortcuts {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    z-index: 100;
+    display: none;
+}
+
+.clinica-receptionist-shortcuts.show {
+    display: block;
+}
+
+.clinica-receptionist-shortcuts h4 {
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+}
+
+.clinica-receptionist-shortcuts ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.clinica-receptionist-shortcuts li {
+    margin-bottom: 5px;
+}
+
+.clinica-receptionist-shortcuts kbd {
+    background: #333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.8rem;
+} 

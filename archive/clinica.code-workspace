@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../clinica-addons"
+		},
+		{
+			"path": "../clinica-backups"
+		},
+		{
+			"path": "../fg-joomla-to-wordpress-premium"
+		}
+	],
+	"settings": {
+		"powershell.cwd": "clinica"
+	}
+}
