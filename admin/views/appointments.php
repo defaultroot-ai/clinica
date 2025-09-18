@@ -70,6 +70,7 @@ $total_pages = ceil($total / $per_page);
 $query = "SELECT a.*, 
                  COALESCE(CONCAT(um1.meta_value, ' ', um2.meta_value), p.display_name) as patient_name,
                  COALESCE(CONCAT(um3.meta_value, ' ', um4.meta_value), d.display_name) as doctor_name,
+                 s.duration as service_duration,
                  a.created_by_type,
                  a.last_edited_by_type,
                  a.last_edited_by_user_id,
@@ -77,6 +78,7 @@ $query = "SELECT a.*,
           FROM $table_name a 
           LEFT JOIN {$wpdb->users} p ON a.patient_id = p.ID 
           LEFT JOIN {$wpdb->users} d ON a.doctor_id = d.ID 
+          LEFT JOIN {$wpdb->prefix}clinica_services s ON a.service_id = s.id
           LEFT JOIN {$wpdb->usermeta} um1 ON p.ID = um1.user_id AND um1.meta_key = 'first_name'
           LEFT JOIN {$wpdb->usermeta} um2 ON p.ID = um2.user_id AND um2.meta_key = 'last_name'
           LEFT JOIN {$wpdb->usermeta} um3 ON d.ID = um3.user_id AND um3.meta_key = 'first_name'
@@ -1272,7 +1274,7 @@ $doctors = get_users(array('role__in' => array('clinica_doctor', 'clinica_manage
                             
                             <?php if (Clinica_Patient_Permissions::can_manage_appointments() && in_array($appointment->status, array('scheduled', 'confirmed'))): ?>
                             <span class="transfer">
-                                <a href="#" class="clinica-button clinica-button--secondary js-transfer-appointment" data-id="<?php echo esc_attr($appointment->id); ?>" data-doctor-id="<?php echo esc_attr($appointment->doctor_id); ?>" data-patient-id="<?php echo esc_attr($appointment->patient_id); ?>" data-service-id="<?php echo esc_attr($appointment->service_id ?: $appointment->type); ?>" data-date="<?php echo esc_attr($appointment->appointment_date); ?>" data-time="<?php echo esc_attr(substr($appointment->appointment_time, 0, 5)); ?>" data-duration="<?php echo esc_attr($appointment->duration); ?>">
+                                <a href="#" class="clinica-button clinica-button--secondary js-transfer-appointment" data-id="<?php echo esc_attr($appointment->id); ?>" data-doctor-id="<?php echo esc_attr($appointment->doctor_id); ?>" data-patient-id="<?php echo esc_attr($appointment->patient_id); ?>" data-service-id="<?php echo esc_attr($appointment->service_id ?: $appointment->type); ?>" data-date="<?php echo esc_attr($appointment->appointment_date); ?>" data-time="<?php echo esc_attr(substr($appointment->appointment_time, 0, 5)); ?>" data-duration="<?php echo esc_attr($appointment->service_duration ?: $appointment->duration); ?>">
                                     <?php _e('Mută doctor', 'clinica'); ?>
                                 </a>
                             </span>
