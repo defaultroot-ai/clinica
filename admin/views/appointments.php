@@ -1405,18 +1405,25 @@ $doctors = get_users(array('role__in' => array('clinica_doctor', 'clinica_manage
                     </select>
                 </div>
                 
-                <div class="form-group">
-                    <label for="transfer-date-picker"><?php _e('Data programării', 'clinica'); ?> <span class="required">*</span></label>
-                    <div id="transfer-calendar">
-                        <input type="text" id="transfer-date-picker" readonly />
+                <!-- Layout cu 2 coloane pentru calendar și sloturi -->
+                <div class="transfer-layout">
+                    <div class="transfer-left-column">
+                        <div class="form-group">
+                            <label for="transfer-date-picker"><?php _e('Data programării', 'clinica'); ?> <span class="required">*</span></label>
+                            <div id="transfer-calendar">
+                                <input type="text" id="transfer-date-picker" readonly />
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="transfer-slot-select"><?php _e('Interval orar', 'clinica'); ?> <span class="required">*</span></label>
-                    <select id="transfer-slot-select" required>
-                        <option value=""><?php _e('Selectează interval...', 'clinica'); ?></option>
-                    </select>
+                    
+                    <div class="transfer-right-column">
+                        <div class="form-group">
+                            <label for="transfer-slot-select"><?php _e('Interval orar', 'clinica'); ?> <span class="required">*</span></label>
+                            <select id="transfer-slot-select" required>
+                                <option value=""><?php _e('Selectează interval...', 'clinica'); ?></option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -2416,6 +2423,55 @@ jQuery(document).ready(function($) {
     }
 }
 
+/* Layout cu 2 coloane pentru modalul de transfer */
+.transfer-layout {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.transfer-left-column {
+    flex: 1;
+    min-width: 0;
+}
+
+.transfer-right-column {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Ajustări pentru calendarul în coloana stângă */
+.transfer-left-column #transfer-calendar {
+    min-height: 320px;
+    max-height: 380px;
+}
+
+/* Ajustări pentru sloturile în coloana dreaptă */
+.transfer-right-column .form-group {
+    margin-bottom: 20px;
+}
+
+.transfer-right-column select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Responsive pentru layout-ul cu 2 coloane */
+@media (max-width: 768px) {
+    .transfer-layout {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .transfer-left-column #transfer-calendar {
+        min-height: 280px;
+        max-height: 320px;
+    }
+}
+
 /* Ajustări pentru modalul de transfer */
 .clinica-modal .modal-body {
     max-height: 80vh;
@@ -2423,7 +2479,7 @@ jQuery(document).ready(function($) {
 }
 
 #transfer-modal .modal-dialog {
-    max-width: 600px;
+    max-width: 800px;
     margin: 30px auto;
 }
 

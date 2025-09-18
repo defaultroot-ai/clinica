@@ -1369,7 +1369,7 @@
 
 .clinica-modal {
     background: #fff;
-    width: 560px;
+    width: 800px;
     max-width: calc(100% - 32px);
     border-radius: 8px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
