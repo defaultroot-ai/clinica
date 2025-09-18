@@ -1107,7 +1107,8 @@ $doctors = get_users(array('role__in' => array('clinica_doctor', 'clinica_manage
                         if (!empty($appointment->appointment_time)) {
                             $start_obj = DateTime::createFromFormat('H:i:s', $appointment->appointment_time);
                             if (!$start_obj) { $start_obj = DateTime::createFromFormat('H:i', substr($appointment->appointment_time, 0, 5)); }
-                            $dur = isset($appointment->duration) ? intval($appointment->duration) : 0;
+                            // Folosește durata din serviciu dacă există, altfel durata din programare
+                            $dur = !empty($appointment->service_duration) ? intval($appointment->service_duration) : (isset($appointment->duration) ? intval($appointment->duration) : 0);
                             if ($start_obj && $dur > 0) {
                                 $end_obj = clone $start_obj; $end_obj->modify('+' . $dur . ' minutes');
                                 echo esc_html($end_obj->format('H:i'));
@@ -1121,8 +1122,10 @@ $doctors = get_users(array('role__in' => array('clinica_doctor', 'clinica_manage
                     </td>
                     <td>
                         <?php 
-                        if (!empty($appointment->duration)) {
-                            echo esc_html(intval($appointment->duration)) . ' min';
+                        // Folosește durata din serviciu dacă există, altfel durata din programare
+                        $display_duration = !empty($appointment->service_duration) ? $appointment->service_duration : $appointment->duration;
+                        if (!empty($display_duration)) {
+                            echo esc_html(intval($display_duration)) . ' min';
                         } else {
                             echo '<em>N/A</em>';
                         }
@@ -1148,8 +1151,11 @@ $doctors = get_users(array('role__in' => array('clinica_doctor', 'clinica_manage
                         }
 
                         // 3) fallback: deducere după durată
-                        if (empty($serviceLabel) && !empty($appointment->duration)) {
-                            $serviceLabel = $wpdb->get_var($wpdb->prepare("SELECT name FROM {$wpdb->prefix}clinica_services WHERE duration = %d AND active = 1 ORDER BY name ASC LIMIT 1", intval($appointment->duration)));
+                        if (empty($serviceLabel)) {
+                            $fallback_duration = !empty($appointment->service_duration) ? $appointment->service_duration : $appointment->duration;
+                            if (!empty($fallback_duration)) {
+                                $serviceLabel = $wpdb->get_var($wpdb->prepare("SELECT name FROM {$wpdb->prefix}clinica_services WHERE duration = %d AND active = 1 ORDER BY name ASC LIMIT 1", intval($fallback_duration)));
+                            }
                         }
 
                         if (empty($serviceLabel)) { $serviceLabel = '—'; }
