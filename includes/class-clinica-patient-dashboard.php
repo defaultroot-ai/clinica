@@ -419,7 +419,17 @@ class Clinica_Patient_Dashboard {
             wp_send_json_error(__('Dată/oră invalide.', 'clinica')); 
         }
         
+        // Obține durata din serviciul curent, nu din programarea salvată
         $duration = max(1, (int)$existing_appointment->duration);
+        if ($service_id > 0) {
+            $service_duration = $wpdb->get_var($wpdb->prepare(
+                "SELECT duration FROM {$wpdb->prefix}clinica_services WHERE id = %d",
+                $service_id
+            ));
+            if ($service_duration) {
+                $duration = (int)$service_duration;
+            }
+        }
         $slotEnd = (clone $slotStart)->modify('+' . $duration . ' minutes');
 
         // Conflicte medic nou

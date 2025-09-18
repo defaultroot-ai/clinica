@@ -1274,7 +1274,7 @@ $doctors = get_users(array('role__in' => array('clinica_doctor', 'clinica_manage
                             
                             <?php if (Clinica_Patient_Permissions::can_manage_appointments() && in_array($appointment->status, array('scheduled', 'confirmed'))): ?>
                             <span class="transfer">
-                                <a href="#" class="clinica-button clinica-button--secondary js-transfer-appointment" data-id="<?php echo esc_attr($appointment->id); ?>" data-doctor-id="<?php echo esc_attr($appointment->doctor_id); ?>" data-patient-id="<?php echo esc_attr($appointment->patient_id); ?>" data-service-id="<?php echo esc_attr($appointment->service_id ?: $appointment->type); ?>" data-date="<?php echo esc_attr($appointment->appointment_date); ?>" data-time="<?php echo esc_attr(substr($appointment->appointment_time, 0, 5)); ?>" data-duration="<?php echo esc_attr($appointment->service_duration ?: $appointment->duration); ?>">
+                                <a href="#" class="clinica-button clinica-button--secondary js-transfer-appointment" data-id="<?php echo esc_attr($appointment->id); ?>" data-doctor-id="<?php echo esc_attr($appointment->doctor_id); ?>" data-patient-id="<?php echo esc_attr($appointment->patient_id); ?>" data-service-id="<?php echo esc_attr($appointment->service_id ?: $appointment->type); ?>" data-date="<?php echo esc_attr($appointment->appointment_date); ?>" data-time="<?php echo esc_attr(substr($appointment->appointment_time, 0, 5)); ?>" data-duration="<?php echo esc_attr($appointment->service_duration); ?>">
                                     <?php _e('Mută doctor', 'clinica'); ?>
                                 </a>
                             </span>
