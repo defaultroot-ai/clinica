@@ -2277,13 +2277,13 @@ jQuery(document).ready(function($) {
 
 /* Stiluri pentru calendarul de transfer */
 #transfer-calendar {
-    min-height: 280px;
-    max-height: 320px;
+    min-height: 350px;
+    max-height: 400px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    padding: 8px;
+    padding: 10px;
     background: #fff;
-    overflow: hidden;
+    overflow: visible;
     width: 100%;
     box-sizing: border-box;
 }
@@ -2315,18 +2315,18 @@ jQuery(document).ready(function($) {
 
 #transfer-calendar .flatpickr-day {
     width: calc(100% / 7) !important;
-    height: 28px !important;
-    line-height: 28px !important;
-    font-size: 12px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 13px !important;
     margin: 0 !important;
     padding: 0 !important;
 }
 
 #transfer-calendar .flatpickr-weekday {
     width: calc(100% / 7) !important;
-    height: 24px !important;
-    line-height: 24px !important;
-    font-size: 11px !important;
+    height: 28px !important;
+    line-height: 28px !important;
+    font-size: 12px !important;
     font-weight: 600 !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -2398,22 +2398,38 @@ jQuery(document).ready(function($) {
 /* Responsive pentru modal */
 @media (max-width: 768px) {
     #transfer-calendar {
-        min-height: 250px;
-        max-height: 280px;
-        padding: 6px;
+        min-height: 300px;
+        max-height: 350px;
+        padding: 8px;
     }
     
     #transfer-calendar .flatpickr-day {
+        height: 28px !important;
+        line-height: 28px !important;
+        font-size: 12px !important;
+    }
+    
+    #transfer-calendar .flatpickr-weekday {
         height: 24px !important;
         line-height: 24px !important;
         font-size: 11px !important;
     }
-    
-    #transfer-calendar .flatpickr-weekday {
-        height: 20px !important;
-        line-height: 20px !important;
-        font-size: 10px !important;
-    }
+}
+
+/* Ajustări pentru modalul de transfer */
+.clinica-modal .modal-body {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+#transfer-modal .modal-dialog {
+    max-width: 600px;
+    margin: 30px auto;
+}
+
+#transfer-modal .modal-content {
+    max-height: 90vh;
+    overflow: hidden;
 }
 
 /* Modal visibility */
