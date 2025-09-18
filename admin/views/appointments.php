@@ -1762,6 +1762,7 @@ jQuery(document).ready(function($) {
             allowInput: false,
             appendTo: document.getElementById('transfer-calendar'),
             showMonths: 1,
+            static: true,
             disable: [function(date){
                 // Dezactivează weekend-urile și datele indisponibile
                 if (date.getDay() === 0 || date.getDay() === 6) return true;
@@ -2276,11 +2277,15 @@ jQuery(document).ready(function($) {
 
 /* Stiluri pentru calendarul de transfer */
 #transfer-calendar {
-    min-height: 300px;
+    min-height: 280px;
+    max-height: 320px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    padding: 10px;
+    padding: 8px;
     background: #fff;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #transfer-calendar .no-availability {
@@ -2293,6 +2298,55 @@ jQuery(document).ready(function($) {
 #transfer-calendar .flatpickr-calendar {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     border: 1px solid #ddd;
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 13px;
+}
+
+#transfer-calendar .flatpickr-innerContainer {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#transfer-calendar .flatpickr-days {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#transfer-calendar .flatpickr-day {
+    width: calc(100% / 7) !important;
+    height: 28px !important;
+    line-height: 28px !important;
+    font-size: 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#transfer-calendar .flatpickr-weekday {
+    width: calc(100% / 7) !important;
+    height: 24px !important;
+    line-height: 24px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#transfer-calendar .flatpickr-months {
+    margin-bottom: 8px !important;
+}
+
+#transfer-calendar .flatpickr-month {
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 14px !important;
+}
+
+#transfer-calendar .flatpickr-prev-month,
+#transfer-calendar .flatpickr-next-month {
+    height: 32px !important;
+    line-height: 32px !important;
+    width: 32px !important;
 }
 
 #transfer-calendar .flatpickr-day.legal-holiday {
@@ -2320,6 +2374,46 @@ jQuery(document).ready(function($) {
 #transfer-calendar .flatpickr-day.selected {
     background-color: #2196f3;
     color: #fff;
+}
+
+/* Ajustări suplimentare pentru potrivirea în modal */
+#transfer-calendar .flatpickr-calendar {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+}
+
+#transfer-calendar .flatpickr-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#transfer-calendar .flatpickr-input {
+    display: none !important;
+}
+
+/* Responsive pentru modal */
+@media (max-width: 768px) {
+    #transfer-calendar {
+        min-height: 250px;
+        max-height: 280px;
+        padding: 6px;
+    }
+    
+    #transfer-calendar .flatpickr-day {
+        height: 24px !important;
+        line-height: 24px !important;
+        font-size: 11px !important;
+    }
+    
+    #transfer-calendar .flatpickr-weekday {
+        height: 20px !important;
+        line-height: 20px !important;
+        font-size: 10px !important;
+    }
 }
 
 /* Modal visibility */
