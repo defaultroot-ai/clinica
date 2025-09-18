@@ -1977,11 +1977,7 @@ jQuery(document).ready(function($) {
         closeTransferModal();
     });
     
-    $(document).on('click', '#clinica-transfer-modal', function(e) {
-        if (e.target === this) {
-            closeTransferModal();
-        }
-    });
+    // Nu se închide modalul când dai click pe backdrop - doar pe butoanele de închidere
 });
 </script>
 
