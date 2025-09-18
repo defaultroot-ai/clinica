@@ -1418,10 +1418,10 @@ $doctors = get_users(array('role__in' => array('clinica_doctor', 'clinica_manage
                     
                     <div class="transfer-right-column">
                         <div class="form-group">
-                            <label for="transfer-slot-select"><?php _e('Interval orar', 'clinica'); ?> <span class="required">*</span></label>
-                            <select id="transfer-slot-select" required>
-                                <option value=""><?php _e('Selectează interval...', 'clinica'); ?></option>
-                            </select>
+                            <label><?php _e('Interval orar', 'clinica'); ?> <span class="required">*</span></label>
+                            <div id="transfer-slots" class="slots-grid">
+                                <!-- slot buttons rendered here -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1633,8 +1633,9 @@ jQuery(document).ready(function($) {
             transferData.date = newDate;
             // Resetează selecțiile
             $('#transfer-doctor-select').val('').html('<option value=""><?php echo esc_js(__('Selectează doctor...', 'clinica')); ?></option>');
-            $('#transfer-slot-select').html('<option value=""><?php echo esc_js(__('Selectează interval...', 'clinica')); ?></option>');
+            $('#transfer-slots').html('');
             $('#transfer-modal-confirm').prop('disabled', true);
+            transferData.selectedSlot = '';
             // Reîncarcă doctorii pentru noua dată
             loadTransferDoctors();
         }
@@ -1644,8 +1645,9 @@ jQuery(document).ready(function($) {
     $('#transfer-doctor-select').on('change', function() {
         var doctorId = $(this).val();
         if (!doctorId) {
-            $('#transfer-slot-select').html('<option value=""><?php echo esc_js(__('Selectează interval...', 'clinica')); ?></option>');
+            $('#transfer-slots').html('');
             $('#transfer-modal-confirm').prop('disabled', true);
+            transferData.selectedSlot = '';
             // Resetează calendarul
             resetTransferCalendar();
             return;
@@ -1834,7 +1836,8 @@ jQuery(document).ready(function($) {
     
     // Încarcă sloturile disponibile pentru doctorul selectat
     function loadTransferSlots(doctorId) {
-        $('#transfer-slot-select').html('<option value=""><?php echo esc_js(__('Se încarcă...', 'clinica')); ?></option>');
+        var grid = $('#transfer-slots');
+        grid.html('<div class="slot-btn disabled">Se încarcă...</div>');
         
         $.post(ajaxurl, {
             action: 'clinica_get_doctor_slots',
@@ -1843,19 +1846,33 @@ jQuery(document).ready(function($) {
             duration: transferData.duration,
             nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
         }, function(resp) {
-            $('#transfer-slot-select').html('<option value=""><?php echo esc_js(__('Selectează interval...', 'clinica')); ?></option>');
+            grid.empty();
             
-            if (resp && resp.success && Array.isArray(resp.data)) {
+            if (resp && resp.success && Array.isArray(resp.data) && resp.data.length > 0) {
                 resp.data.forEach(function(slot) {
-                    $('#transfer-slot-select').append($('<option/>').val(slot).text(slot));
+                    var btn = $('<div/>').addClass('slot-btn').text(slot).attr('data-slot', slot);
+                    btn.on('click', function() {
+                        $('.slot-btn').removeClass('selected');
+                        $(this).addClass('selected');
+                        transferData.selectedSlot = slot;
+                        validateTransferForm();
+                    });
+                    grid.append(btn);
                 });
                 
                 // Încearcă să selecteze slotul original
                 var originalSlot = transferData.time + ' - ' + getEndTime(transferData.time, transferData.duration);
                 if (resp.data.includes(originalSlot)) {
-                    $('#transfer-slot-select').val(originalSlot);
+                    grid.find('[data-slot="' + originalSlot + '"]').addClass('selected');
+                    transferData.selectedSlot = originalSlot;
                 }
+            } else {
+                grid.append('<div class="slot-btn disabled">Nu există sloturi disponibile</div>');
             }
+            
+            validateTransferForm();
+        }).fail(function() {
+            grid.html('<div class="slot-btn disabled">Eroare la încărcare</div>');
         });
     }
     
@@ -1870,19 +1887,19 @@ jQuery(document).ready(function($) {
     function validateTransferForm() {
         var date = $('#transfer-date-picker').val();
         var doctor = $('#transfer-doctor-select').val();
-        var slot = $('#transfer-slot-select').val();
+        var slot = transferData.selectedSlot || '';
         var isValid = date && doctor && slot;
         $('#transfer-modal-confirm').prop('disabled', !isValid);
     }
     
     // Validează la schimbarea câmpurilor
-    $('#transfer-date-picker, #transfer-doctor-select, #transfer-slot-select').on('change', validateTransferForm);
+    $('#transfer-date-picker, #transfer-doctor-select').on('change', validateTransferForm);
     
     // Confirmă mutarea
     $('#transfer-modal-confirm').on('click', function() {
         var newDate = $('#transfer-date-picker').val();
         var doctorId = $('#transfer-doctor-select').val();
-        var slot = $('#transfer-slot-select').val();
+        var slot = transferData.selectedSlot || '';
         var notes = $('#transfer-notes').val();
         var sendEmail = $('#transfer-send-email').is(':checked');
         
@@ -1944,10 +1961,11 @@ jQuery(document).ready(function($) {
         // Resetează formularul
         $('#transfer-date-picker').val('');
         $('#transfer-doctor-select').val('');
-        $('#transfer-slot-select').html('<option value=""><?php echo esc_js(__('Selectează interval...', 'clinica')); ?></option>');
+        $('#transfer-slots').html('');
         $('#transfer-notes').val('');
         $('#transfer-send-email').prop('checked', true);
         $('#transfer-modal-confirm').prop('disabled', true);
+        transferData.selectedSlot = '';
         // Resetează calendarul
         resetTransferCalendar();
     }
@@ -2451,12 +2469,75 @@ jQuery(document).ready(function($) {
     margin-bottom: 20px;
 }
 
-.transfer-right-column select {
-    width: 100%;
+/* Stiluri pentru sloturile ca în dashboard-ul pacient */
+#transfer-slots.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
     padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    background: #f9f9f9;
+}
+
+#transfer-slots .slot-btn {
+    padding: 8px;
+    text-align: center;
+    background: #fff;
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#transfer-slots .slot-btn:hover:not(.disabled) {
+    background: #f0f8ff;
+    border-color: #0073aa;
+    color: #0073aa;
+}
+
+#transfer-slots .slot-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f5f5f5;
+    color: #999;
+}
+
+#transfer-slots .slot-btn.selected {
+    background: #0073aa;
+    color: #fff;
+    border-color: #0073aa;
+}
+
+#transfer-slots .slot-btn.selected:hover {
+    background: #005a87;
+    border-color: #005a87;
+}
+
+/* Scrollbar personalizat pentru grid-ul de sloturi */
+#transfer-slots.slots-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+#transfer-slots.slots-grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+#transfer-slots.slots-grid::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+#transfer-slots.slots-grid::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 /* Responsive pentru layout-ul cu 2 coloane */
