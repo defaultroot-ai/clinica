@@ -1284,7 +1284,7 @@ class Clinica_Patient_Dashboard {
                     var duration = parseInt($('#booking-service option:selected').data('duration'), 10) || <?php echo (int) Clinica_Settings::get_instance()->get('appointment_duration', 30); ?>;
                     var match = services.find(function(s){ return parseInt(s.id,10) === selectedServiceId; });
                     if (match && match.duration) { duration = match.duration; }
-                    loadSlots($('#booking-doctor').val(), $(this).val(), duration);
+                    loadSlots($('#booking-doctor').val(), $(this).val(), duration, selectedServiceId);
                 }
                 updateCreateButtonState();
             });
@@ -1560,7 +1560,7 @@ class Clinica_Patient_Dashboard {
                             var match = services.find(function(s){ return parseInt(s.id,10) === selectedServiceId; });
                             if (match && match.duration) { duration = match.duration; }
                             
-                            loadSlots($('#booking-doctor').val(), dateStr, duration);
+                            loadSlots($('#booking-doctor').val(), dateStr, duration, selectedServiceId);
                             updateCreateButtonState();
                         }
                     });
