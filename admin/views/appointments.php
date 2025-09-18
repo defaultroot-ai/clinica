@@ -1600,8 +1600,6 @@ jQuery(document).ready(function($) {
     
     // Încarcă doctorii pentru serviciul selectat
     function loadTransferDoctors() {
-        console.log('🔍 DEBUG: loadTransferDoctors() - START');
-        console.log('🔍 DEBUG: transferData =', transferData);
         
         var grid = $('#transfer-doctors');
         grid.html('<div class="doctor-btn disabled">Se încarcă...</div>');
@@ -1611,28 +1609,26 @@ jQuery(document).ready(function($) {
             service_id: transferData.serviceId,
             nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
         }, function(resp) {
-            console.log('🔍 DEBUG: loadTransferDoctors() - AJAX SUCCESS');
-            console.log('🔍 DEBUG: resp =', resp);
             
             grid.empty();
             
             if (resp && resp.success && Array.isArray(resp.data) && resp.data.length > 0) {
-                console.log('🔍 DEBUG: Found doctors:', resp.data.length);
+                // console.log('🔍 DEBUG: Found doctors:', resp.data.length);
                 
                 resp.data.forEach(function(doctor) {
                     // Exclude doctorul curent
                     if (parseInt(doctor.id) !== parseInt(transferData.doctorId)) {
-                        console.log('🔍 DEBUG: Creating button for doctor:', doctor.name, 'ID:', doctor.id);
+                        // console.log('🔍 DEBUG: Creating button for doctor:', doctor.name, 'ID:', doctor.id);
                         
                         var btn = $('<div/>').addClass('doctor-btn').text(doctor.name).attr('data-doctor-id', doctor.id);
                         btn.on('click', function() {
-                            console.log('🔍 DEBUG: Doctor button clicked:', doctor.name, 'ID:', doctor.id);
+                            // console.log('🔍 DEBUG: Doctor button clicked:', doctor.name, 'ID:', doctor.id);
                             
                             $('.doctor-btn').removeClass('selected');
                             $(this).addClass('selected');
                             transferData.selectedDoctorId = doctor.id;
                             
-                            console.log('🔍 DEBUG: transferData.selectedDoctorId =', transferData.selectedDoctorId);
+                            // console.log('🔍 DEBUG: transferData.selectedDoctorId =', transferData.selectedDoctorId);
                             
                             // Încarcă calendarul și sloturile pentru noul doctor
                             loadTransferAvailableDays(doctor.id, transferData.serviceId);
@@ -1648,14 +1644,14 @@ jQuery(document).ready(function($) {
                 
                 // Nu selecta automat primul doctor - lasă utilizatorul să aleagă
             } else {
-                console.log('🔍 DEBUG: No doctors available');
+                // console.log('🔍 DEBUG: No doctors available');
                 grid.append('<div class="doctor-btn disabled">Nu există doctori disponibili</div>');
             }
         }).fail(function(xhr, status, error) {
-            console.error('🔍 DEBUG: loadTransferDoctors() - AJAX ERROR');
-            console.error('🔍 DEBUG: xhr =', xhr);
-            console.error('🔍 DEBUG: status =', status);
-            console.error('🔍 DEBUG: error =', error);
+            // console.error('🔍 DEBUG: loadTransferDoctors() - AJAX ERROR');
+            // console.error('🔍 DEBUG: xhr =', xhr);
+            // console.error('🔍 DEBUG: status =', status);
+            // console.error('🔍 DEBUG: error =', error);
             
             grid.html('<div class="doctor-btn disabled">Eroare la încărcare</div>');
         });
@@ -1681,9 +1677,9 @@ jQuery(document).ready(function($) {
     
     // Încarcă zilele disponibile pentru doctorul selectat
     function loadTransferAvailableDays(doctorId, serviceId) {
-        console.log('🔍 DEBUG: loadTransferAvailableDays() - START');
-        console.log('🔍 DEBUG: doctorId =', doctorId);
-        console.log('🔍 DEBUG: serviceId =', serviceId);
+        // console.log('🔍 DEBUG: loadTransferAvailableDays() - START');
+        // console.log('🔍 DEBUG: doctorId =', doctorId);
+        // console.log('🔍 DEBUG: serviceId =', serviceId);
         
         $.ajax({
             url: '<?php echo admin_url('admin-ajax.php'); ?>',
@@ -1695,19 +1691,19 @@ jQuery(document).ready(function($) {
                 nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>' 
             },
             success: function(resp){
-                console.log('🔍 DEBUG: loadTransferAvailableDays() - AJAX SUCCESS');
-                console.log('🔍 DEBUG: resp =', resp);
+                // console.log('🔍 DEBUG: loadTransferAvailableDays() - AJAX SUCCESS');
+                // console.log('🔍 DEBUG: resp =', resp);
                 
                 var days = (resp && resp.success && Array.isArray(resp.data)) ? resp.data : [];
-                console.log('🔍 DEBUG: Available days =', days);
+                // console.log('🔍 DEBUG: Available days =', days);
                 
                 renderTransferCalendar(days);
             },
             error: function(xhr, status, error){
-                console.error('🔍 DEBUG: loadTransferAvailableDays() - AJAX ERROR');
-                console.error('🔍 DEBUG: xhr =', xhr);
-                console.error('🔍 DEBUG: status =', status);
-                console.error('🔍 DEBUG: error =', error);
+                // console.error('🔍 DEBUG: loadTransferAvailableDays() - AJAX ERROR');
+                // console.error('🔍 DEBUG: xhr =', xhr);
+                // console.error('🔍 DEBUG: status =', status);
+                // console.error('🔍 DEBUG: error =', error);
                 
                 renderTransferCalendar([]); 
             }
@@ -1716,23 +1712,23 @@ jQuery(document).ready(function($) {
     
     // Render calendarul de transfer cu zilele disponibile
     function renderTransferCalendar(days) {
-        console.log('🔍 DEBUG: renderTransferCalendar() - START');
-        console.log('🔍 DEBUG: days =', days);
+        // console.log('🔍 DEBUG: renderTransferCalendar() - START');
+        // console.log('🔍 DEBUG: days =', days);
         
         var container = document.getElementById('transfer-calendar');
         if (!container) {
-            console.error('🔍 DEBUG: transfer-calendar container not found!');
+            // console.error('🔍 DEBUG: transfer-calendar container not found!');
             return;
         }
         
         // Dacă nu există zile disponibile, afișează mesaj
         if (!days || days.length === 0) {
-            console.log('🔍 DEBUG: No days available, showing message');
+            // console.log('🔍 DEBUG: No days available, showing message');
             container.innerHTML = '<div class="no-availability">Nu există zile disponibile pentru acest doctor și serviciu</div>';
             return;
         }
         
-        console.log('🔍 DEBUG: Rendering calendar with', days.length, 'days');
+        // console.log('🔍 DEBUG: Rendering calendar with', days.length, 'days');
         
         // Creează input-ul pentru Flatpickr dacă nu există
         var input = document.getElementById('transfer-date-picker');
@@ -1876,10 +1872,10 @@ jQuery(document).ready(function($) {
     
     // Încarcă sloturile disponibile pentru doctorul selectat
     function loadTransferSlots(doctorId) {
-        console.log('🔍 DEBUG: loadTransferSlots() - START');
-        console.log('🔍 DEBUG: doctorId =', doctorId);
-        console.log('🔍 DEBUG: transferData.date =', transferData.date);
-        console.log('🔍 DEBUG: transferData.duration =', transferData.duration);
+        // console.log('🔍 DEBUG: loadTransferSlots() - START');
+        // console.log('🔍 DEBUG: doctorId =', doctorId);
+        // console.log('🔍 DEBUG: transferData.date =', transferData.date);
+        // console.log('🔍 DEBUG: transferData.duration =', transferData.duration);
         
         var grid = $('#transfer-slots');
         grid.html('<div class="slot-btn disabled">Se încarcă...</div>');
@@ -1892,18 +1888,18 @@ jQuery(document).ready(function($) {
             service_id: transferData.serviceId,
             nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
         }, function(resp) {
-            console.log('🔍 DEBUG: loadTransferSlots() - AJAX SUCCESS');
-            console.log('🔍 DEBUG: resp =', resp);
+            // console.log('🔍 DEBUG: loadTransferSlots() - AJAX SUCCESS');
+            // console.log('🔍 DEBUG: resp =', resp);
             
             grid.empty();
             
             if (resp && resp.success && Array.isArray(resp.data) && resp.data.length > 0) {
-                console.log('🔍 DEBUG: Found slots:', resp.data.length);
+                // console.log('🔍 DEBUG: Found slots:', resp.data.length);
                 
                 resp.data.forEach(function(slot) {
                     var btn = $('<div/>').addClass('slot-btn').text(slot).attr('data-slot', slot);
                     btn.on('click', function() {
-                        console.log('🔍 DEBUG: Slot clicked:', slot);
+                        // console.log('🔍 DEBUG: Slot clicked:', slot);
                         $('.slot-btn').removeClass('selected');
                         $(this).addClass('selected');
                         transferData.selectedSlot = slot;
@@ -1919,16 +1915,16 @@ jQuery(document).ready(function($) {
                     transferData.selectedSlot = originalSlot;
                 }
             } else {
-                console.log('🔍 DEBUG: No slots available');
+                // console.log('🔍 DEBUG: No slots available');
                 grid.append('<div class="slot-btn disabled">Nu există sloturi disponibile</div>');
             }
             
             validateTransferForm();
         }).fail(function(xhr, status, error) {
-            console.error('🔍 DEBUG: loadTransferSlots() - AJAX ERROR');
-            console.error('🔍 DEBUG: xhr =', xhr);
-            console.error('🔍 DEBUG: status =', status);
-            console.error('🔍 DEBUG: error =', error);
+            // console.error('🔍 DEBUG: loadTransferSlots() - AJAX ERROR');
+            // console.error('🔍 DEBUG: xhr =', xhr);
+            // console.error('🔍 DEBUG: status =', status);
+            // console.error('🔍 DEBUG: error =', error);
             
             grid.html('<div class="slot-btn disabled">Eroare la încărcare</div>');
         });
@@ -1948,11 +1944,11 @@ jQuery(document).ready(function($) {
         var slot = transferData.selectedSlot || '';
         var isValid = date && doctor && slot;
         
-        console.log('🔍 DEBUG: validateTransferForm()');
-        console.log('🔍 DEBUG: date =', date);
-        console.log('🔍 DEBUG: doctor =', doctor);
-        console.log('🔍 DEBUG: slot =', slot);
-        console.log('🔍 DEBUG: isValid =', isValid);
+        // console.log('🔍 DEBUG: validateTransferForm()');
+        // console.log('🔍 DEBUG: date =', date);
+        // console.log('🔍 DEBUG: doctor =', doctor);
+        // console.log('🔍 DEBUG: slot =', slot);
+        // console.log('🔍 DEBUG: isValid =', isValid);
         
         $('#transfer-modal-confirm').prop('disabled', !isValid);
     }
