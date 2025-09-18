@@ -1872,10 +1872,10 @@ jQuery(document).ready(function($) {
     
     // Încarcă sloturile disponibile pentru doctorul selectat
     function loadTransferSlots(doctorId) {
-        // console.log('🔍 DEBUG: loadTransferSlots() - START');
-        // console.log('🔍 DEBUG: doctorId =', doctorId);
-        // console.log('🔍 DEBUG: transferData.date =', transferData.date);
-        // console.log('🔍 DEBUG: transferData.duration =', transferData.duration);
+        console.log('🔍 DEBUG: loadTransferSlots() - START');
+        console.log('🔍 DEBUG: doctorId =', doctorId);
+        console.log('🔍 DEBUG: transferData.date =', transferData.date);
+        console.log('🔍 DEBUG: transferData.duration =', transferData.duration);
         
         var grid = $('#transfer-slots');
         grid.html('<div class="slot-btn disabled">Se încarcă...</div>');
@@ -1888,13 +1888,13 @@ jQuery(document).ready(function($) {
             service_id: transferData.serviceId,
             nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
         }, function(resp) {
-            // console.log('🔍 DEBUG: loadTransferSlots() - AJAX SUCCESS');
-            // console.log('🔍 DEBUG: resp =', resp);
+            console.log('🔍 DEBUG: loadTransferSlots() - AJAX SUCCESS');
+            console.log('🔍 DEBUG: resp =', resp);
             
             grid.empty();
             
             if (resp && resp.success && Array.isArray(resp.data) && resp.data.length > 0) {
-                // console.log('🔍 DEBUG: Found slots:', resp.data.length);
+                console.log('🔍 DEBUG: Found slots:', resp.data.length);
                 
                 resp.data.forEach(function(slot) {
                     var btn = $('<div/>').addClass('slot-btn').text(slot).attr('data-slot', slot);
