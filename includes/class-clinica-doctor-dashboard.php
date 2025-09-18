@@ -5,6 +5,29 @@
 if (!defined('ABSPATH')) exit;
 
 class Clinica_Doctor_Dashboard {
+    
+    /**
+     * Verifică nonce-ul AJAX cu suport pentru multiple variante
+     */
+    private function verify_ajax_nonce($nonce, $action = '') {
+        $valid_nonces = array(
+            'clinica_nonce',
+            'clinica_frontend_nonce', 
+            'clinica_dashboard_nonce',
+            'clinica_assistant_dashboard_nonce',
+            'clinica_doctor_nonce',
+            'clinica_receptionist_nonce'
+        );
+        
+        foreach ($valid_nonces as $valid_nonce) {
+            if (wp_verify_nonce($nonce, $valid_nonce)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     public function __construct() {
         add_shortcode('clinica_doctor_dashboard', array($this, 'render_dashboard_shortcode'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_assets'));
@@ -353,7 +376,9 @@ class Clinica_Doctor_Dashboard {
      * AJAX handler pentru încărcarea formularului de creare pacienți
      */
     public function ajax_load_patient_form() {
-        check_ajax_referer('clinica_doctor_nonce', 'nonce');
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
+            wp_send_json_error('Eroare de securitate');
+        }
         
         if (!is_user_logged_in()) {
             wp_send_json_error('Nu sunteți autentificat');
@@ -379,7 +404,9 @@ class Clinica_Doctor_Dashboard {
      * AJAX handler pentru overview
      */
     public function ajax_overview() {
-        check_ajax_referer('clinica_doctor_nonce', 'nonce');
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
+            wp_send_json_error('Eroare de securitate');
+        }
         
         if (!is_user_logged_in()) {
             wp_send_json_error('Nu sunteți autentificat');
@@ -483,7 +510,9 @@ class Clinica_Doctor_Dashboard {
      * AJAX handler pentru programări
      */
     public function ajax_appointments() {
-        check_ajax_referer('clinica_doctor_nonce', 'nonce');
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
+            wp_send_json_error('Eroare de securitate');
+        }
         
         if (!is_user_logged_in()) {
             wp_send_json_error('Nu sunteți autentificat');
@@ -615,7 +644,9 @@ class Clinica_Doctor_Dashboard {
      * AJAX handler pentru pacienți
      */
     public function ajax_patients() {
-        check_ajax_referer('clinica_doctor_nonce', 'nonce');
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
+            wp_send_json_error('Eroare de securitate');
+        }
         
         if (!is_user_logged_in()) {
             wp_send_json_error('Nu sunteți autentificat');
@@ -689,7 +720,9 @@ class Clinica_Doctor_Dashboard {
     public function ajax_medical() {
         // Error logging pentru debugging
         
-        check_ajax_referer('clinica_doctor_nonce', 'nonce');
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
+            wp_send_json_error('Eroare de securitate');
+        }
         
         if (!is_user_logged_in()) {
             wp_send_json_error('Nu sunteți autentificat');
@@ -793,7 +826,9 @@ class Clinica_Doctor_Dashboard {
     public function ajax_reports() {
         // Error logging pentru debugging
         
-        check_ajax_referer('clinica_doctor_nonce', 'nonce');
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
+            wp_send_json_error('Eroare de securitate');
+        }
         
         if (!is_user_logged_in()) {
             wp_send_json_error('Nu sunteți autentificat');
@@ -925,7 +960,9 @@ class Clinica_Doctor_Dashboard {
     public function ajax_get_appointment_details() {
         // Error logging pentru debugging
         
-        check_ajax_referer('clinica_doctor_nonce', 'nonce');
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
+            wp_send_json_error('Eroare de securitate');
+        }
         
         if (!is_user_logged_in()) {
             wp_send_json_error('Nu sunteți autentificat');
@@ -1033,7 +1070,9 @@ class Clinica_Doctor_Dashboard {
     public function ajax_get_patient_appointments() {
         // Error logging pentru debugging
         
-        check_ajax_referer('clinica_doctor_nonce', 'nonce');
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
+            wp_send_json_error('Eroare de securitate');
+        }
         
         if (!is_user_logged_in()) {
             wp_send_json_error('Nu sunteți autentificat');

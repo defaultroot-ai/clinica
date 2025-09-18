@@ -1191,7 +1191,6 @@ class Clinica_Patient_Dashboard {
                     },
                     success: function(resp){
                         if (resp && resp.success && resp.data){
-                            console.log('Dashboard stats', resp.data);
                             var s = resp.data;
                             $('#total-appointments').text(s.total_appointments ?? '0');
                             $('#upcoming-appointments').text(s.upcoming_appointments ?? '0');
@@ -1199,11 +1198,6 @@ class Clinica_Patient_Dashboard {
                             $('#cancelled-appointments').text(s.range_cancelled ?? '0');
                             $('#completed-appointments').text(s.range_completed ?? '0');
                             $('#no-show-appointments').text(s.range_no_show ?? '0');
-                            if (s.debug){
-                                console.log('Distinct statuses:', s.debug.distinct_statuses);
-                                console.log('Range breakdown:', s.debug.range_breakdown);
-                                console.log('Sample cancelled in range:', s.debug.sample_cancelled);
-                            }
                         }
                     }
                 });
@@ -1216,7 +1210,69 @@ class Clinica_Patient_Dashboard {
             
             // Load recent activities
             function loadRecentActivities() {
-                $('#recent-activities').html('<div class="no-activities">Nu există activități recente</div>');
+                $.ajax({
+                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    type: 'POST',
+                    data: {
+                        action: 'clinica_get_recent_activities',
+                        patient_id: patientId,
+                        nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
+                    },
+                    success: function(resp){
+                        if (resp && resp.success && resp.data && resp.data.length > 0){
+                            var html = '';
+                            resp.data.forEach(function(activity) {
+                                var timeAgo = getTimeAgo(activity.timestamp);
+                                var iconClass = getIconClass(activity.icon);
+                                var readClass = activity.read === false ? ' unread' : '';
+                                
+                                html += '<div class="activity-item ' + activity.type + readClass + '">';
+                                html += '<div class="activity-icon ' + iconClass + '"></div>';
+                                html += '<div class="activity-content">';
+                                html += '<div class="activity-title">' + activity.title + '</div>';
+                                html += '<div class="activity-description">' + activity.description + '</div>';
+                                if (activity.details) {
+                                    html += '<div class="activity-details">' + activity.details + '</div>';
+                                }
+                                html += '<div class="activity-time">' + timeAgo + '</div>';
+                                html += '</div>';
+                                html += '</div>';
+                            });
+                            $('#recent-activities').html(html);
+                        } else {
+                            $('#recent-activities').html('<div class="no-activities">Nu există activități recente</div>');
+                        }
+                    },
+                    error: function(){
+                        $('#recent-activities').html('<div class="no-activities">Eroare la încărcarea activităților</div>');
+                    }
+                });
+            }
+            
+            // Helper functions for activities
+            function getTimeAgo(timestamp) {
+                var now = Math.floor(Date.now() / 1000);
+                var diff = now - timestamp;
+                
+                if (diff < 60) return 'Acum';
+                if (diff < 3600) return Math.floor(diff / 60) + ' min în urmă';
+                if (diff < 86400) return Math.floor(diff / 3600) + ' ore în urmă';
+                if (diff < 2592000) return Math.floor(diff / 86400) + ' zile în urmă';
+                if (diff < 31536000) return Math.floor(diff / 2592000) + ' luni în urmă';
+                return Math.floor(diff / 31536000) + ' ani în urmă';
+            }
+            
+            function getIconClass(icon) {
+                var iconMap = {
+                    'calendar-plus': 'fa fa-calendar-plus',
+                    'check-circle': 'fa fa-check-circle',
+                    'check-double': 'fa fa-check-double',
+                    'times-circle': 'fa fa-times-circle',
+                    'exclamation-triangle': 'fa fa-exclamation-triangle',
+                    'bell': 'fa fa-bell',
+                    'file-medical': 'fa fa-file-medical'
+                };
+                return iconMap[icon] || 'fa fa-info-circle';
             }
             
             // Edit profile button
@@ -1246,12 +1302,8 @@ class Clinica_Patient_Dashboard {
                 
                 // Așteaptă ca formularul să fie vizibil înainte de a încerca să inițializezi calendarul
                 setTimeout(function() {
-                    console.log('=== FORM SHOULD BE VISIBLE NOW ===');
                     var appointmentForm = document.getElementById('new-appointment-form');
-                    console.log('Appointment form display after slideDown:', appointmentForm ? window.getComputedStyle(appointmentForm).display : 'N/A');
-                    
                     var input = document.getElementById('booking-date-picker');
-                    console.log('Input element after slideDown:', input);
                 }, 200);
             });
             $('#cancel-appointment-form').on('click', function(){
@@ -1454,11 +1506,7 @@ class Clinica_Patient_Dashboard {
                 (days||[]).forEach(function(rec){ 
                     var d = (typeof rec==='string')?rec:rec.date; 
                     available[d] = rec; 
-                    console.log('Adding to available:', d, '=', rec);
                 });
-                console.log('Available dates:', available);
-                console.log('Available dates keys:', Object.keys(available));
-                console.log('Available dates values:', Object.values(available));
                 // load Flatpickr dynamically
                 function loadScript(src, cb){ var s=document.createElement('script'); s.src=src; s.onload=cb; document.head.appendChild(s); }
                 function loadCSS(href){ var l=document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); }
@@ -1548,10 +1596,6 @@ class Clinica_Patient_Dashboard {
                                    String(date.getMonth() + 1).padStart(2, '0') + '-' + 
                                    String(date.getDate()).padStart(2, '0');
                             var isAvailable = available[s] && !available[s].full;
-                            console.log('Checking date:', s, 'available[s]:', available[s], 'isAvailable:', isAvailable);
-                            if (!isAvailable) {
-                                console.log('Disabling date:', s, 'available:', available[s]);
-                            }
                             return !isAvailable;
                         }],
                         onDayCreate: function(dObj, dStr, fp, dayElem){
@@ -1857,6 +1901,111 @@ class Clinica_Patient_Dashboard {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 15px;
+        }
+        
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-item.unread {
+            background: #f8fafc;
+            margin: 0 -12px;
+            padding: 12px;
+            border-radius: 6px;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .activity-item.appointment_created .activity-icon {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        
+        .activity-item.appointment_confirmed .activity-icon {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .activity-item.appointment_completed .activity-icon {
+            background: #dcfce7;
+            color: #059669;
+        }
+        
+        .activity-item.appointment_cancelled .activity-icon {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .activity-item.appointment_no_show .activity-icon {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .activity-item.notification .activity-icon {
+            background: #e0e7ff;
+            color: #7c3aed;
+        }
+        
+        .activity-item.medical_record .activity-icon {
+            background: #f0fdf4;
+            color: #059669;
+        }
+        
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .activity-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .activity-description {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .activity-details {
+            color: #9ca3af;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        
+        .activity-time {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+        
+        .no-activities {
+            text-align: center;
+            color: #9ca3af;
+            padding: 20px;
+            font-style: italic;
         }
         
         .stat-item {
@@ -2233,9 +2382,10 @@ class Clinica_Patient_Dashboard {
         
         $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
         
-        $query = "SELECT a.*, d.display_name as doctor_name
+        $query = "SELECT a.*, d.display_name as doctor_name, s.name as service_name, s.duration as service_duration
                   FROM $table_name a 
                   LEFT JOIN {$wpdb->users} d ON a.doctor_id = d.ID 
+                  LEFT JOIN {$wpdb->prefix}clinica_services s ON a.service_id = s.id
                   $where_clause 
                   ORDER BY a.appointment_date DESC, a.appointment_time DESC 
                   LIMIT 20";
@@ -2255,10 +2405,10 @@ class Clinica_Patient_Dashboard {
         $html .= '.patient-appointments-table-wrap .appt-status-completed { color:#2563eb; }';
         $html .= '.patient-appointments-table-wrap .appt-status-cancelled { color:#dc2626; }';
         $html .= '.patient-appointments-table-wrap .appt-status-no_show { color:#d97706; }';
-        $html .= '.patient-appointments-table-wrap .clinica-patient-btn { display:inline-block; padding:6px 12px; margin:2px; border:none; border-radius:4px; cursor:pointer; font-size:12px; text-decoration:none; }';
-        $html .= '.patient-appointments-table-wrap .clinica-patient-btn-secondary { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }';
-        $html .= '.patient-appointments-table-wrap .clinica-patient-btn-secondary:hover { background:#e2e8f0; }';
-        $html .= '.patient-appointments-table-wrap .clinica-patient-btn-disabled { background:#f8fafc; color:#94a3b8; cursor:not-allowed; }';
+        $html .= '.patient-appointments-table-wrap .clinica-patient-btn { display:inline-block !important; padding:8px 16px !important; margin:2px !important; border:none !important; border-radius:6px !important; cursor:pointer !important; font-size:13px !important; font-weight:500 !important; text-decoration:none !important; transition:all 0.2s ease !important; }';
+        $html .= '.patient-appointments-table-wrap .clinica-patient-btn-secondary { background:#dc2626 !important; color:#ffffff !important; border:1px solid #dc2626 !important; }';
+        $html .= '.patient-appointments-table-wrap .clinica-patient-btn-secondary:hover { background:#b91c1c !important; border-color:#b91c1c !important; transform:translateY(-1px) !important; box-shadow:0 2px 4px rgba(220,38,38,0.3) !important; }';
+        $html .= '.patient-appointments-table-wrap .clinica-patient-btn-disabled { background:#f8fafc !important; color:#94a3b8 !important; cursor:not-allowed !important; }';
         $html .= '</style>';
         
         if (empty($appointments)) {
@@ -2269,8 +2419,9 @@ class Clinica_Patient_Dashboard {
             $html .= '<thead style="background:#f8fafc;">';
             $html .= '<tr>';
             $html .= '<th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Data</th>';
-            $html .= '<th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Ora</th>';
+            $html .= '<th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Interval</th>';
             $html .= '<th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Doctor</th>';
+            $html .= '<th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Serviciu</th>';
             $html .= '<th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Status</th>';
             $html .= '<th style="text-align:right; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Acțiuni</th>';
             $html .= '</tr>';
@@ -2283,8 +2434,28 @@ class Clinica_Patient_Dashboard {
                 
                 $html .= '<tr style="border-bottom:1px solid #f1f5f9;">';
                 $html .= '<td style="padding:12px;">' . date('d.m.Y', strtotime($appointment->appointment_date)) . '</td>';
-                $html .= '<td style="padding:12px;">' . substr($appointment->appointment_time, 0, 5) . '</td>';
+                // Calculează ora de sfârșit
+                $start_time = substr($appointment->appointment_time, 0, 5);
+                $duration = !empty($appointment->service_duration) ? (int)$appointment->service_duration : (isset($appointment->duration) ? (int)$appointment->duration : 0);
+                $end_time = $start_time ? date('H:i', strtotime($start_time) + 60 * max(0, $duration)) : '';
+                $time_display = $end_time ? $start_time . ' - ' . $end_time : $start_time;
+                $html .= '<td style="padding:12px;">' . $time_display . '</td>';
                 $html .= '<td style="padding:12px;">' . esc_html($appointment->doctor_name) . '</td>';
+                // Serviciu: preferă service_name din JOIN; fallback la service_id/type
+                $service_name = '';
+                if (isset($appointment->service_name) && $appointment->service_name !== '') {
+                    $service_name = (string) $appointment->service_name;
+                } elseif (!empty($appointment->service_id)) {
+                    $service_name = $this->get_service_name_by_id((int) $appointment->service_id);
+                } elseif (!empty($appointment->type)) {
+                    if (ctype_digit((string) $appointment->type)) {
+                        $service_name = $this->get_service_name_by_id((int) $appointment->type);
+                    } else {
+                        $service_name = (string) $appointment->type;
+                    }
+                }
+                if ($service_name === '' || $service_name === null) { $service_name = '-'; }
+                $html .= '<td style="padding:12px;">' . esc_html($service_name) . '</td>';
                 $html .= '<td style="padding:12px;"><span class="' . $status_class . '">' . esc_html($status_text) . '</span></td>';
                 $html .= '<td style="padding:12px; text-align:right;">';
                 
@@ -2295,7 +2466,7 @@ class Clinica_Patient_Dashboard {
                 $can_cancel = $is_future && !in_array($appointment->status, array('completed', 'cancelled', 'no_show'));
                 
                 if ($can_cancel) {
-                    $html .= '<button class="clinica-patient-btn clinica-patient-btn-secondary js-cancel-appointment" data-id="' . esc_attr($appointment->id) . '">Anulează</button>';
+                    $html .= '<button class="clinica-patient-btn clinica-patient-btn-secondary js-cancel-appointment" data-id="' . esc_attr($appointment->id) . '" style="background: #dc2626 !important; color: #ffffff !important; border: 1px solid #dc2626 !important; padding: 8px 16px !important; border-radius: 6px !important; font-size: 13px !important; font-weight: 500 !important; cursor: pointer !important; transition: all 0.2s ease !important;">Anulează</button>';
                 } else {
                     // Nu afișăm butonul deloc pentru programările care nu pot fi anulate
                     $html .= '<span style="opacity:.6;">-</span>';
@@ -2394,9 +2565,8 @@ class Clinica_Patient_Dashboard {
      * AJAX pentru anularea programărilor
      */
     public function ajax_cancel_appointment() {
-        $nonce = isset($_POST['nonce']) ? $_POST['nonce'] : '';
-        $nonce_ok = wp_verify_nonce($nonce, 'clinica_dashboard_nonce') || wp_verify_nonce($nonce, 'clinica_admin_cancel_nonce');
-        if (!$nonce_ok) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -2713,6 +2883,10 @@ class Clinica_Patient_Dashboard {
             .patient-appointments-table-wrap .appt-status-completed { color:#2563eb; }
             .patient-appointments-table-wrap .appt-status-cancelled { color:#dc2626; }
             .patient-appointments-table-wrap .appt-status-no_show { color:#d97706; }
+            .patient-appointments-table-wrap .clinica-patient-btn { display:inline-block !important; padding:8px 16px !important; margin:2px !important; border:none !important; border-radius:6px !important; cursor:pointer !important; font-size:13px !important; text-decoration:none !important; font-weight:500 !important; transition:all 0.2s ease !important; }
+            .patient-appointments-table-wrap .clinica-patient-btn-secondary { background:#dc2626 !important; color:#ffffff !important; border:1px solid #dc2626 !important; }
+            .patient-appointments-table-wrap .clinica-patient-btn-secondary:hover { background:#b91c1c !important; border-color:#b91c1c !important; transform:translateY(-1px) !important; box-shadow:0 2px 4px rgba(220,38,38,0.3) !important; }
+            .patient-appointments-table-wrap .clinica-patient-btn-disabled { background:#f8fafc !important; color:#94a3b8 !important; cursor:not-allowed !important; }
             </style>
             <!-- Controale de paginare eliminate pentru performanță -->
             <div class="table-responsive" style="overflow:auto; border:1px solid #e2e8f0; border-radius:6px;">
@@ -2722,7 +2896,7 @@ class Clinica_Patient_Dashboard {
                             <th data-sort="date" style="text-align:left; padding:10px; border-bottom:1px solid #e2e8f0; cursor:pointer;">Data</th>
                             <th data-sort="text" style="text-align:left; padding:10px; border-bottom:1px solid #e2e8f0; cursor:pointer;">Interval</th>
                             <th data-sort="text" style="text-align:left; padding:10px; border-bottom:1px solid #e2e8f0; cursor:pointer;">Doctor</th>
-                            <th data-sort="text" style="text-align:left; padding:10px; border-bottom:1px solid #e2e8f0; cursor:pointer;">Serviciu</th>
+                            <th data-sort="text" style="text-align:left; padding:10px; border-bottom:1px solid #e2e8f0; cursor:pointer; background: #ffeb3b;">SERVICIU TEST</th>
                             <th data-sort="num" style="text-align:right; padding:10px; border-bottom:1px solid #e2e8f0; cursor:pointer;">Durată</th>
                             <th data-sort="text" style="text-align:left; padding:10px; border-bottom:1px solid #e2e8f0; cursor:pointer;">Status</th>
                             <th style="text-align:right; padding:10px; border-bottom:1px solid #e2e8f0;">Acțiuni</th>
@@ -2765,7 +2939,7 @@ class Clinica_Patient_Dashboard {
                                 <td style="padding:10px; border-bottom:1px solid #eef2f7;"><span class="appt-status appt-status-<?php echo esc_attr($status_raw); ?>"><?php echo esc_html($status_label); ?></span></td>
                                 <td style="padding:10px; border-bottom:1px solid #eef2f7; text-align:right;">
                                     <?php if ($can_cancel): ?>
-                                        <button type="button" class="button button-secondary js-cancel-appointment">Anulează</button>
+                                        <button type="button" class="clinica-patient-btn clinica-patient-btn-secondary js-cancel-appointment" data-id="<?php echo esc_attr($appointment->id); ?>" style="background: #ff0000 !important; color: #ffffff !important; font-size: 16px !important; padding: 10px 20px !important;">ANULEAZĂ TEST</button>
                                     <?php else: ?>
                                         <span style="opacity:.6;">-</span>
                                     <?php endif; ?>
@@ -3206,8 +3380,128 @@ class Clinica_Patient_Dashboard {
      * Obține activitățile recente
      */
     private function get_recent_activities($patient_id) {
-        // TODO: Implementare când vor fi create tabelele pentru activități
-        return array();
+        global $wpdb;
+        $activities = array();
+        
+        // 1. Programări recente (ultimele 10)
+        $appointments_table = $wpdb->prefix . 'clinica_appointments';
+        $appointments = $wpdb->get_results($wpdb->prepare(
+            "SELECT a.*, d.display_name as doctor_name, s.name as service_name
+             FROM $appointments_table a 
+             LEFT JOIN {$wpdb->users} d ON a.doctor_id = d.ID 
+             LEFT JOIN {$wpdb->prefix}clinica_services s ON a.service_id = s.id
+             WHERE a.patient_id = %d 
+             ORDER BY a.updated_at DESC, a.created_at DESC 
+             LIMIT 10",
+            $patient_id
+        ));
+        
+        foreach ($appointments as $appointment) {
+            $service_name = !empty($appointment->service_name) ? $appointment->service_name : 'Consultare';
+            $doctor_name = !empty($appointment->doctor_name) ? $appointment->doctor_name : 'Doctor necunoscut';
+            $appointment_date = date('d.m.Y', strtotime($appointment->appointment_date));
+            $appointment_time = substr($appointment->appointment_time, 0, 5);
+            
+            $status_text = '';
+            $activity_type = '';
+            $icon = '';
+            
+            switch ($appointment->status) {
+                case 'scheduled':
+                    $status_text = 'programată';
+                    $activity_type = 'appointment_created';
+                    $icon = 'calendar-plus';
+                    break;
+                case 'confirmed':
+                    $status_text = 'confirmată';
+                    $activity_type = 'appointment_confirmed';
+                    $icon = 'check-circle';
+                    break;
+                case 'completed':
+                    $status_text = 'finalizată';
+                    $activity_type = 'appointment_completed';
+                    $icon = 'check-double';
+                    break;
+                case 'cancelled':
+                    $status_text = 'anulată';
+                    $activity_type = 'appointment_cancelled';
+                    $icon = 'times-circle';
+                    break;
+                case 'no_show':
+                    $status_text = 'neprezentat';
+                    $activity_type = 'appointment_no_show';
+                    $icon = 'exclamation-triangle';
+                    break;
+            }
+            
+            $activities[] = array(
+                'type' => $activity_type,
+                'icon' => $icon,
+                'title' => "Programare $status_text",
+                'description' => "$service_name cu Dr. $doctor_name",
+                'details' => "$appointment_date la $appointment_time",
+                'date' => $appointment->updated_at ?: $appointment->created_at,
+                'timestamp' => strtotime($appointment->updated_at ?: $appointment->created_at)
+            );
+        }
+        
+        // 2. Notificări recente (ultimele 5)
+        $notifications_table = $wpdb->prefix . 'clinica_notifications';
+        $notifications = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM $notifications_table 
+             WHERE user_id = %d 
+             ORDER BY created_at DESC 
+             LIMIT 5",
+            $patient_id
+        ));
+        
+        foreach ($notifications as $notification) {
+            $activities[] = array(
+                'type' => 'notification',
+                'icon' => 'bell',
+                'title' => $notification->title,
+                'description' => $notification->message,
+                'details' => '',
+                'date' => $notification->created_at,
+                'timestamp' => strtotime($notification->created_at),
+                'read' => !empty($notification->read_at)
+            );
+        }
+        
+        // 3. Dosare medicale recente (ultimele 5)
+        $medical_table = $wpdb->prefix . 'clinica_medical_records';
+        $medical_records = $wpdb->get_results($wpdb->prepare(
+            "SELECT mr.*, d.display_name as doctor_name
+             FROM $medical_table mr 
+             LEFT JOIN {$wpdb->users} d ON mr.doctor_id = d.ID 
+             WHERE mr.patient_id = %d 
+             ORDER BY mr.created_at DESC 
+             LIMIT 5",
+            $patient_id
+        ));
+        
+        foreach ($medical_records as $record) {
+            $doctor_name = !empty($record->doctor_name) ? $record->doctor_name : 'Doctor necunoscut';
+            $record_date = date('d.m.Y', strtotime($record->record_date));
+            
+            $activities[] = array(
+                'type' => 'medical_record',
+                'icon' => 'file-medical',
+                'title' => 'Dosar medical actualizat',
+                'description' => "De către Dr. $doctor_name",
+                'details' => "Data: $record_date",
+                'date' => $record->created_at,
+                'timestamp' => strtotime($record->created_at)
+            );
+        }
+        
+        // Sortează toate activitățile după timestamp
+        usort($activities, function($a, $b) {
+            return $b['timestamp'] - $a['timestamp'];
+        });
+        
+        // Returnează doar ultimele 15 activități
+        return array_slice($activities, 0, 15);
     }
     
     /**

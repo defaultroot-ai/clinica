@@ -11,6 +11,31 @@ class Clinica_Services_Manager {
     
     private static $instance = null;
     
+    /**
+     * Verifică nonce-ul AJAX cu suport pentru multiple variante
+     */
+    private function verify_ajax_nonce($nonce, $action = '') {
+        $valid_nonces = array(
+            'clinica_nonce',
+            'clinica_frontend_nonce', 
+            'clinica_dashboard_nonce',
+            'clinica_assistant_dashboard_nonce',
+            'clinica_doctor_nonce',
+            'clinica_receptionist_nonce',
+            'clinica_services_nonce',
+            'clinica_timeslots_nonce',
+            'clinica_normalize_name'
+        );
+        
+        foreach ($valid_nonces as $valid_nonce) {
+            if (wp_verify_nonce($nonce, $valid_nonce)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     public static function get_instance() {
         if (null === self::$instance) {
             self::$instance = new self();
@@ -41,7 +66,7 @@ class Clinica_Services_Manager {
      * Obține doctorii care pot oferi un anumit serviciu
      */
     public function ajax_get_doctors_for_service() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_dashboard_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -115,7 +140,7 @@ class Clinica_Services_Manager {
      * AJAX: obține serviciile pentru un doctor
      */
     public function ajax_get_services_for_doctor() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_services_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -137,7 +162,7 @@ class Clinica_Services_Manager {
      * Salvează alocarea unui doctor la un serviciu
      */
     public function ajax_save_doctor_service_allocation() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_services_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -205,7 +230,7 @@ class Clinica_Services_Manager {
      * AJAX: obține doctorii pentru un serviciu
      */
     public function ajax_get_service_doctors() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_services_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -357,7 +382,7 @@ class Clinica_Services_Manager {
      */
     public function ajax_normalize_name() {
         // Verifică nonce-ul
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_normalize_name')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
             return;
         }
@@ -740,7 +765,7 @@ class Clinica_Services_Manager {
      * AJAX handler pentru salvarea timeslot-ului
      */
     public function ajax_save_timeslot() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_timeslots_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -782,7 +807,7 @@ class Clinica_Services_Manager {
      * AJAX handler pentru ștergerea timeslot-ului
      */
     public function ajax_delete_timeslot() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_timeslots_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -806,7 +831,7 @@ class Clinica_Services_Manager {
      */
     public function ajax_delete_day_timeslots() {
         
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_timeslots_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -832,7 +857,7 @@ class Clinica_Services_Manager {
      * AJAX handler pentru obținerea timeslot-urilor
      */
     public function ajax_get_doctor_timeslots() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_timeslots_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -851,7 +876,7 @@ class Clinica_Services_Manager {
      * AJAX handler pentru obținerea sloturilor disponibile
      */
     public function ajax_get_available_slots() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_timeslots_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -867,7 +892,7 @@ class Clinica_Services_Manager {
      * AJAX handler pentru ștergerea tuturor timeslots-urilor unui doctor și serviciu
      */
     public function ajax_delete_all_doctor_service_timeslots() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_timeslots_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -919,7 +944,7 @@ class Clinica_Services_Manager {
      * AJAX handler pentru numărarea sloturilor unui doctor
      */
     public function ajax_get_doctor_timeslots_count() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_timeslots_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -946,7 +971,7 @@ class Clinica_Services_Manager {
      * AJAX handler pentru programul zilei
      */
     public function ajax_get_today_schedule() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_timeslots_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         

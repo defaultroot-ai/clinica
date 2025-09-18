@@ -5,6 +5,29 @@
 if (!defined('ABSPATH')) exit;
 
 class Clinica_Assistant_Dashboard {
+    
+    /**
+     * Verifică nonce-ul AJAX cu suport pentru multiple variante
+     */
+    private function verify_ajax_nonce($nonce, $action = '') {
+        $valid_nonces = array(
+            'clinica_nonce',
+            'clinica_frontend_nonce', 
+            'clinica_dashboard_nonce',
+            'clinica_assistant_dashboard_nonce',
+            'clinica_doctor_nonce',
+            'clinica_receptionist_nonce'
+        );
+        
+        foreach ($valid_nonces as $valid_nonce) {
+            if (wp_verify_nonce($nonce, $valid_nonce)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     public function __construct() {
         add_shortcode('clinica_assistant_dashboard', array($this, 'render_dashboard_shortcode'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_assets'));
@@ -281,8 +304,8 @@ class Clinica_Assistant_Dashboard {
      * AJAX handler pentru overview
      */
     public function ajax_overview() {
-        // Verificare nonce manuală
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -410,8 +433,8 @@ class Clinica_Assistant_Dashboard {
      * AJAX handler pentru programări
      */
     public function ajax_appointments() {
-        // Verificare nonce manuală
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -456,8 +479,8 @@ class Clinica_Assistant_Dashboard {
      * AJAX handler pentru pacienți
      */
     public function ajax_patients() {
-        // Verificare nonce manuală
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -490,8 +513,8 @@ class Clinica_Assistant_Dashboard {
      * AJAX handler pentru calendar
      */
     public function ajax_calendar() {
-        // Verificare nonce manuală
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -514,8 +537,8 @@ class Clinica_Assistant_Dashboard {
      * AJAX handler pentru rapoarte
      */
     public function ajax_reports() {
-        // Verificare nonce manuală
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -1004,8 +1027,8 @@ class Clinica_Assistant_Dashboard {
      * AJAX handler pentru sugestii de căutare pacienți
      */
     public function ajax_search_patients_suggestions() {
-        // Verificare nonce manuală
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -1080,8 +1103,8 @@ class Clinica_Assistant_Dashboard {
      * AJAX handler pentru sugestii de căutare familii
      */
     public function ajax_search_families_suggestions() {
-        // Verificare nonce manuală
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -1136,7 +1159,7 @@ class Clinica_Assistant_Dashboard {
      * AJAX handler pentru obținerea datelor pacientului
      */
     public function ajax_get_patient_data() {
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -1190,7 +1213,7 @@ class Clinica_Assistant_Dashboard {
      * AJAX handler pentru actualizarea datelor pacientului
      */
     public function ajax_update_patient() {
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -1281,7 +1304,7 @@ class Clinica_Assistant_Dashboard {
      * AJAX handler pentru crearea programării
      */
     public function ajax_create_appointment() {
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -1434,7 +1457,7 @@ class Clinica_Assistant_Dashboard {
      */
     public function ajax_get_appointment_modal_data() {
         // Verifică nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_die('Eroare de securitate');
         }
         
@@ -1469,7 +1492,7 @@ class Clinica_Assistant_Dashboard {
      */
     public function ajax_create_appointment_advanced() {
         // Verifică nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_assistant_dashboard_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_die('Eroare de securitate');
         }
         

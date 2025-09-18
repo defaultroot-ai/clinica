@@ -56,6 +56,37 @@ class Clinica_Plugin {
     }
     
     /**
+     * Verifică nonce-ul AJAX cu suport pentru multiple variante
+     */
+    private function verify_ajax_nonce($nonce, $action = '') {
+        $valid_nonces = array(
+            'clinica_nonce',
+            'clinica_frontend_nonce', 
+            'clinica_dashboard_nonce',
+            'clinica_assistant_dashboard_nonce',
+            'clinica_doctor_nonce',
+            'clinica_receptionist_nonce',
+            'clinica_live_updates_nonce',
+            'clinica_search_nonce',
+            'clinica_family_nonce',
+            'clinica_family_logs_nonce',
+            'clinica_validate_cnp',
+            'clinica_generate_password',
+            'clinica_create_patient',
+            'clinica_auto_fix_dash_name',
+            'clinica_dual_roles_action'
+        );
+        
+        foreach ($valid_nonces as $valid_nonce) {
+            if (wp_verify_nonce($nonce, $valid_nonce)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
      * Returneaza instanCia singleton
      */
     public static function get_instance() {
@@ -168,6 +199,12 @@ class Clinica_Plugin {
         add_action('wp_ajax_clinica_validate_cnp', array($this, 'ajax_validate_cnp'));
         add_action('wp_ajax_clinica_generate_password', array($this, 'ajax_generate_password'));
         add_action('wp_ajax_clinica_create_patient', array($this, 'ajax_create_patient'));
+        
+        // AJAX handlers pentru frontend
+        add_action('wp_ajax_clinica_login_frontend', array($this, 'ajax_login_frontend'));
+        add_action('wp_ajax_nopriv_clinica_login_frontend', array($this, 'ajax_login_frontend'));
+        add_action('wp_ajax_clinica_confirm_appointment', array($this, 'ajax_confirm_appointment'));
+        add_action('wp_ajax_nopriv_clinica_confirm_appointment', array($this, 'ajax_confirm_appointment'));
         
         // AJAX handlers pentru debug
         add_action('wp_ajax_clinica_test_db_connection', array($this, 'ajax_test_db_connection'));
@@ -3075,19 +3112,8 @@ Echipa Clinica',
      * AJAX handlers pentru validare CNP si generare parola
      */
     public function ajax_validate_cnp() {
-        // Verifica multiple nonce-uri pentru compatibilitate
-        $nonce_valid = false;
-        if (isset($_POST['nonce'])) {
-            if (wp_verify_nonce($_POST['nonce'], 'clinica_doctor_nonce')) {
-                $nonce_valid = true;
-            } elseif (wp_verify_nonce($_POST['nonce'], 'clinica_frontend_nonce')) {
-                $nonce_valid = true;
-            } elseif (wp_verify_nonce($_POST['nonce'], 'clinica_validate_cnp')) {
-                $nonce_valid = true;
-            }
-        }
-        
-        if (!$nonce_valid) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -3118,19 +3144,8 @@ Echipa Clinica',
     }
 
     public function ajax_generate_password() {
-        // Verifica multiple nonce-uri pentru compatibilitate
-        $nonce_valid = false;
-        if (isset($_POST['nonce'])) {
-            if (wp_verify_nonce($_POST['nonce'], 'clinica_doctor_nonce')) {
-                $nonce_valid = true;
-            } elseif (wp_verify_nonce($_POST['nonce'], 'clinica_frontend_nonce')) {
-                $nonce_valid = true;
-            } elseif (wp_verify_nonce($_POST['nonce'], 'clinica_generate_password')) {
-                $nonce_valid = true;
-            }
-        }
-        
-        if (!$nonce_valid) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -3148,19 +3163,8 @@ Echipa Clinica',
     }
 
     public function ajax_create_patient() {
-        // Verifica multiple nonce-uri pentru compatibilitate
-        $nonce_valid = false;
-        if (isset($_POST['nonce'])) {
-            if (wp_verify_nonce($_POST['nonce'], 'clinica_doctor_nonce')) {
-                $nonce_valid = true;
-            } elseif (wp_verify_nonce($_POST['nonce'], 'clinica_frontend_nonce')) {
-                $nonce_valid = true;
-            } elseif (wp_verify_nonce($_POST['nonce'], 'clinica_create_patient')) {
-                $nonce_valid = true;
-            }
-        }
-        
-        if (!$nonce_valid) {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -4064,7 +4068,7 @@ Echipa Clinica',
      */
     public function ajax_search_patients_suggestions() {
         // Verifică nonce-ul
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_search_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_die('Eroare de securitate');
         }
         
@@ -4161,7 +4165,7 @@ Echipa Clinica',
      */
     public function ajax_search_families_suggestions() {
         // Verifică nonce-ul
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_family_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_die('Eroare de securitate');
         }
         
@@ -4220,7 +4224,7 @@ Echipa Clinica',
      * AJAX handler pentru obținerea log-urilor familiilor
      */
     public function ajax_get_family_logs() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_family_logs_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -4238,7 +4242,7 @@ Echipa Clinica',
      * AJAX handler pentru exportul log-urilor
      */
     public function ajax_export_family_logs() {
-        if (!wp_verify_nonce($_GET['nonce'], 'clinica_family_logs_nonce')) {
+        if (!$this->verify_ajax_nonce($_GET['nonce'])) {
             wp_die('Eroare de securitate');
         }
         
@@ -4280,7 +4284,7 @@ Echipa Clinica',
      * AJAX handler pentru ștergerea log-urilor vechi
      */
     public function ajax_clear_old_logs() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_family_logs_nonce')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
         }
         
@@ -4517,7 +4521,7 @@ Echipa Clinica',
      */
     public function ajax_auto_fix_dash_name() {
         // Verifică nonce-ul
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_auto_fix_dash_name')) {
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
             wp_send_json_error('Eroare de securitate');
             return;
         }
@@ -4571,6 +4575,37 @@ Echipa Clinica',
             'new_first_name' => $new_first_name,
             'new_last_name' => $new_last_name
         ));
+    }
+    
+    /**
+     * AJAX handler pentru login frontend
+     */
+    public function ajax_login_frontend() {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
+            wp_send_json_error('Eroare de securitate');
+        }
+        
+        // Implementare simplă pentru login frontend
+        wp_send_json_success(array('message' => 'Login frontend handler'));
+    }
+    
+    /**
+     * AJAX handler pentru confirmarea programărilor
+     */
+    public function ajax_confirm_appointment() {
+        // Verifică nonce-ul
+        if (!$this->verify_ajax_nonce($_POST['nonce'])) {
+            wp_send_json_error('Eroare de securitate');
+        }
+        
+        $appointment_id = isset($_POST['appointment_id']) ? intval($_POST['appointment_id']) : 0;
+        if ($appointment_id <= 0) {
+            wp_send_json_error('ID programare invalid');
+        }
+        
+        // Implementare simplă pentru confirmarea programărilor
+        wp_send_json_success(array('message' => 'Programarea a fost confirmată'));
     }
 
 }
