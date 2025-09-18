@@ -1408,16 +1408,16 @@ $doctors = get_users(array('role__in' => array('clinica_doctor', 'clinica_manage
                 <!-- Layout cu 2 coloane pentru calendar și sloturi -->
                 <div class="transfer-layout">
                     <div class="transfer-left-column">
-                        <div class="form-group">
+                <div class="form-group">
                             <label for="transfer-date-picker"><?php _e('Data programării', 'clinica'); ?> <span class="required">*</span></label>
                             <div id="transfer-calendar">
                                 <input type="text" id="transfer-date-picker" readonly />
                             </div>
                         </div>
-                    </div>
-                    
+                </div>
+                
                     <div class="transfer-right-column">
-                        <div class="form-group">
+                <div class="form-group">
                             <label><?php _e('Interval orar', 'clinica'); ?> <span class="required">*</span></label>
                             <div id="transfer-slots" class="slots-grid">
                                 <!-- slot buttons rendered here -->
