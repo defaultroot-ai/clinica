@@ -2402,11 +2402,17 @@ jQuery(document).ready(function($) {
 
 #transfer-calendar .flatpickr-day {
     width: calc(100% / 7) !important;
-    height: 32px !important;
-    line-height: 32px !important;
-    font-size: 13px !important;
-    margin: 0 !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 14px !important;
+    margin: 2px !important;
     padding: 0 !important;
+    border-radius: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
 }
 
 #transfer-calendar .flatpickr-weekday {
@@ -2454,13 +2460,16 @@ jQuery(document).ready(function($) {
 }
 
 #transfer-calendar .flatpickr-day:hover:not(.disabled) {
-    background-color: #e3f2fd;
-    color: #1976d2;
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+    transform: scale(1.05) !important;
 }
 
 #transfer-calendar .flatpickr-day.selected {
-    background-color: #2196f3;
-    color: #fff;
+    background-color: #2196f3 !important;
+    color: #fff !important;
+    font-weight: bold !important;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3) !important;
 }
 
 /* Ajustări suplimentare pentru potrivirea în modal */

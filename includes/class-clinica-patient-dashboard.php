@@ -3199,7 +3199,9 @@ class Clinica_Patient_Dashboard {
                 // Convertește la formatul așteptat
                 $formatted_slots = array();
                 foreach ($available_slots as $slot) {
-                    $formatted_slots[] = $slot['start_time'] . ' - ' . $slot['end_time'];
+                    $start_time = date('H:i', strtotime($slot['start_time']));
+                    $end_time = date('H:i', strtotime($slot['end_time']));
+                    $formatted_slots[] = $start_time . ' - ' . $end_time;
                 }
                 
                 wp_send_json_success($formatted_slots);
