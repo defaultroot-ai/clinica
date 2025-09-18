@@ -106,17 +106,20 @@
 ## 5. PERMISIUNI ȘI RESTRICȚII
 
 ### 5.1 Doctor
-- **Poate muta:** Doar programările proprii
+- **Poate vedea:** Doar programările proprii (pe serviciile lui)
+- **Poate muta:** Programările proprii pe alți doctori (nu pe el însuși)
 - **Restricții timp:** Doar programările din ziua curentă/viitoare
 - **Notificări:** Pacient + Doctor nou
 
 ### 5.2 Asistent
-- **Poate muta:** Programările pentru doctorii asignați
+- **Poate vedea:** Toate programările
+- **Poate muta:** Orice programare pe orice doctor
 - **Restricții timp:** Doar programările din ziua curentă/viitoare
 - **Notificări:** Pacient + Doctor vechi + Doctor nou
 
 ### 5.3 Receptionist
-- **Poate muta:** Orice programare
+- **Poate vedea:** Toate programările
+- **Poate muta:** Orice programare pe orice doctor
 - **Restricții timp:** Fără restricții
 - **Notificări:** Pacient + Doctor vechi + Doctor nou
 

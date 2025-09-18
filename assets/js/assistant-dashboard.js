@@ -193,6 +193,9 @@
             loadOverviewAppointments();
         }
         
+        // Face funcția loadAppointments globală
+        window.loadAppointments = loadAppointments;
+        
         function loadOverviewAppointments() {
             $.ajax({
                 url: clinicaAssistantAjax.ajaxurl,

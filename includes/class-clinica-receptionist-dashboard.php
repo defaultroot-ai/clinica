@@ -41,6 +41,23 @@ class Clinica_Receptionist_Dashboard {
                 'nonce' => wp_create_nonce('clinica_live_updates_nonce'),
                 'pollingInterval' => 15000
             ));
+
+            // CSS pentru transfer frontend
+            wp_enqueue_style(
+                'clinica-transfer-frontend', 
+                plugin_dir_url(__FILE__) . '../assets/css/transfer-frontend.css', 
+                array(), 
+                '1.0.0'
+            );
+            
+            // JavaScript pentru transfer frontend
+            wp_enqueue_script(
+                'clinica-transfer-frontend', 
+                plugin_dir_url(__FILE__) . '../assets/js/transfer-frontend.js', 
+                array('jquery'), 
+                '1.0.0', 
+                true
+            );
         }
     }
 
@@ -158,34 +175,7 @@ class Clinica_Receptionist_Dashboard {
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>09:00</td>
-                                    <td>Ionescu Maria</td>
-                                    <td>Dr. Popescu</td>
-                                    <td>Consultatie</td>
-                                    <td><span class="clinica-receptionist-status confirmed">Confirmat</span></td>
-                                    <td>
-                                        <button class="clinica-receptionist-btn clinica-receptionist-btn-secondary" data-action="edit-appointment" data-id="1">Editează</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>10:30</td>
-                                    <td>Popescu Ion</td>
-                                    <td>Dr. Ionescu</td>
-                                    <td>Analize</td>
-                                    <td><span class="clinica-receptionist-status pending">În așteptare</span></td>
-                                    <td>
-                                        <button class="clinica-receptionist-btn clinica-receptionist-btn-secondary" data-action="edit-appointment" data-id="2">Editează</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>14:00</td>
-                                    <td>Vasilescu Ana</td>
-                                    <td>Dr. Popescu</td>
-                                    <td>Consultatie</td>
-                                    <td><span class="clinica-receptionist-status confirmed">Confirmat</span></td>
-                                    <td>
-                                        <button class="clinica-receptionist-btn clinica-receptionist-btn-secondary" data-action="edit-appointment" data-id="3">Editează</button>
-                                    </td>
+                                    <td colspan="6" class="clinica-receptionist-loading">Se încarcă programările...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -209,6 +199,18 @@ class Clinica_Receptionist_Dashboard {
                 </div>
             </div>
         </div>
+
+        <!-- Modal pentru transfer programări -->
+        <?php include_once plugin_dir_path(__FILE__) . '../templates/transfer-modal-frontend.php'; ?>
+
+        <script>
+        // Variabile globale pentru AJAX
+        var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+        var clinicaAjax = {
+            ajaxurl: ajaxurl,
+            nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
+        };
+        </script>
         <?php
         return ob_get_clean();
     }
@@ -300,31 +302,62 @@ class Clinica_Receptionist_Dashboard {
             wp_send_json_error('Nu aveți permisiunea de a accesa această funcționalitate');
         }
         
-        // Date demo pentru programări
-        $data = array(
-            'appointments' => array(
-                array(
-                    'date' => '2024-01-15',
-                    'time' => '09:00',
-                    'patient' => 'Ionescu Maria',
-                    'doctor' => 'Dr. Popescu',
-                    'service' => 'Consultatie',
-                    'status' => 'confirmed',
-                    'id' => 1
-                ),
-                array(
-                    'date' => '2024-01-15',
-                    'time' => '10:30',
-                    'patient' => 'Popescu Ion',
-                    'doctor' => 'Dr. Ionescu',
-                    'service' => 'Analize',
-                    'status' => 'pending',
-                    'id' => 2
-                )
-            )
-        );
+        global $wpdb;
+        $table_appointments = $wpdb->prefix . 'clinica_appointments';
+        $table_patients = $wpdb->prefix . 'clinica_patients';
         
-        wp_send_json_success($data);
+        // Obține programările pentru ziua curentă
+        $today = date('Y-m-d');
+        $appointments = $wpdb->get_results($wpdb->prepare("
+            SELECT 
+                a.id,
+                a.appointment_date as date,
+                a.appointment_time as time,
+                a.status,
+                a.duration,
+                a.service_id,
+                a.doctor_id,
+                a.patient_id,
+                p.first_name,
+                p.last_name,
+                p.cnp,
+                d.display_name as doctor_name,
+                s.name as service_name
+            FROM $table_appointments a
+            LEFT JOIN $table_patients p ON a.patient_id = p.user_id
+            LEFT JOIN {$wpdb->users} d ON a.doctor_id = d.ID
+            LEFT JOIN {$wpdb->prefix}clinica_services s ON a.service_id = s.id
+            WHERE a.appointment_date = %s
+            ORDER BY a.appointment_time ASC
+        ", $today));
+        
+        $html = '';
+        foreach ($appointments as $appointment) {
+            $patient_name = trim($appointment->first_name . ' ' . $appointment->last_name);
+            $service_name = $appointment->service_name ?: 'N/A';
+            $duration = $appointment->duration ?: 30;
+            
+            $html .= '<div class="clinica-receptionist-appointment-item">';
+            $html .= '<div class="appointment-time">' . esc_html($appointment->time) . '</div>';
+            $html .= '<div class="appointment-patient">' . esc_html($patient_name) . '</div>';
+            $html .= '<div class="appointment-doctor">' . esc_html($appointment->doctor_name) . '</div>';
+            $html .= '<div class="appointment-type">' . esc_html($service_name) . '</div>';
+            $html .= '<div class="appointment-status status-' . esc_attr($appointment->status) . '">' . esc_html($appointment->status) . '</div>';
+            $html .= '<div class="appointment-actions">';
+            $html .= '<button class="clinica-receptionist-btn clinica-receptionist-btn-secondary" onclick="editAppointment(' . $appointment->id . ')">Editează</button>';
+            
+            // Afișează butonul "Mută" doar dacă statusul permite transferul
+            if (!in_array($appointment->status, array('completed', 'cancelled', 'no_show'))) {
+                $html .= '<button class="clinica-receptionist-btn clinica-receptionist-btn-primary" onclick="openTransferModalFrontend(' . $appointment->id . ', ' . $appointment->doctor_id . ', ' . $appointment->patient_id . ', ' . ($appointment->service_id ?: 0) . ', \'' . $appointment->date . '\', \'' . $appointment->time . '\', ' . $duration . ', \'' . esc_js($patient_name ?: 'Pacient necunoscut') . '\', \'' . esc_js($appointment->doctor_name ?: 'Doctor necunoscut') . '\', \'' . esc_js($service_name) . '\')">Mută</button>';
+            } else {
+                $html .= '<button class="clinica-receptionist-btn clinica-receptionist-btn-disabled" disabled title="Programarea nu poate fi mutată (status: ' . esc_attr($appointment->status) . ')">Mută</button>';
+            }
+            
+            $html .= '</div>';
+            $html .= '</div>';
+        }
+        
+        wp_send_json_success(array('html' => $html));
     }
 
     /**

@@ -169,6 +169,9 @@
                 }
             });
         }
+        
+        // Face funcția loadAppointments globală
+        window.loadAppointments = loadAppointments;
 
         function loadPatients() {
             const content = $('.clinica-doctor-tab-content[data-tab="patients"]');
@@ -764,5 +767,10 @@
             }
         }
     }
+
+    // Funcții globale
+    window.editAppointment = function(appointmentId) {
+        showMessage(`Editare programare ${appointmentId}. Funcționalitatea va fi implementată în curând.`, 'info');
+    };
 
 })(jQuery); 

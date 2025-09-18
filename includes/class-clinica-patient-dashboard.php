@@ -39,6 +39,8 @@ class Clinica_Patient_Dashboard {
         add_action('wp_ajax_clinica_admin_update_appointment', array($this, 'ajax_admin_update_appointment'));
         // Admin transfer appointment
         add_action('wp_ajax_clinica_admin_transfer_appointment', array($this, 'ajax_admin_transfer_appointment'));
+        // Frontend transfer appointment
+        add_action('wp_ajax_clinica_frontend_transfer_appointment', array($this, 'ajax_frontend_transfer_appointment'));
         add_action('wp_ajax_clinica_get_romanian_holidays', array($this, 'ajax_get_romanian_holidays'));
     }
 
@@ -1019,10 +1021,17 @@ class Clinica_Patient_Dashboard {
             // Tab navigation
             $('.tab-button').on('click', function() {
                 var tabId = $(this).data('tab');
+                switchToTab(tabId);
+            });
+            
+            // Funcție pentru schimbarea tab-ului
+            function switchToTab(tabId) {
+                // Salvează tab-ul activ în localStorage
+                localStorage.setItem('clinica_patient_active_tab', tabId);
                 
                 // Update active tab
                 $('.tab-button').removeClass('active');
-                $(this).addClass('active');
+                $('.tab-button[data-tab="' + tabId + '"]').addClass('active');
                 
                 // Update active content
                 $('.tab-content').removeClass('active');
@@ -1047,7 +1056,19 @@ class Clinica_Patient_Dashboard {
                         loadMessages();
                         break;
                 }
-            });
+            }
+            
+            // Restaurează tab-ul activ din localStorage la încărcarea paginii
+            var savedTab = localStorage.getItem('clinica_patient_active_tab');
+            if (savedTab && $('.tab-button[data-tab="' + savedTab + '"]').length > 0) {
+                switchToTab(savedTab);
+            } else {
+                // Dacă nu există tab salvat, activează primul tab disponibil
+                var firstTab = $('.tab-button').first().data('tab');
+                if (firstTab) {
+                    switchToTab(firstTab);
+                }
+            }
             
             // Load initial data
             loadDashboardStats();
@@ -2123,6 +2144,214 @@ class Clinica_Patient_Dashboard {
      * AJAX pentru obținerea programărilor
      */
     public function ajax_get_appointments() {
+        // Verifică nonce-ul - încearcă mai multe variante
+        $nonce_valid = false;
+        
+        // Verifică nonce-ul standard
+        if (wp_verify_nonce($_POST['nonce'], 'clinica_dashboard_nonce')) {     
+            $nonce_valid = true;
+        }
+        
+        // Verifică nonce-ul alternativ
+        if (!$nonce_valid && wp_verify_nonce($_POST['nonce'], 'clinica_nonce')) {
+            $nonce_valid = true;
+        }
+        
+        if (!$nonce_valid) {
+            wp_send_json_error('Eroare de securitate - nonce invalid');        
+        }
+        
+        $patient_id = intval($_POST['patient_id']);
+        $current_user_id = get_current_user_id();
+        
+        // Verifică dacă patient_id este valid, altfel folosește current_user_id
+        if ($patient_id <= 0) {
+            $patient_id = $current_user_id;
+        }
+        
+        // Verifică dacă clasa Clinica_Patient_Permissions există
+        if (class_exists('Clinica_Patient_Permissions')) {
+            $can_view = Clinica_Patient_Permissions::can_view_appointments();  
+        } else {
+            $can_view = false;
+        }
+        
+        // Verifică dacă utilizatorul curent este pacientul respectiv sau are permisiuni
+        if ($current_user_id !== $patient_id && !$can_view) {
+            // Verifică dacă utilizatorul poate vedea propriile programări     
+            $can_view_own = false;
+            if (class_exists('Clinica_Patient_Permissions')) {
+                $can_view_own = Clinica_Patient_Permissions::can_view_own_appointments();
+            }
+
+            if (!$can_view_own) {
+                wp_send_json_error('Nu aveți permisiunea de a accesa aceste date');
+            }
+        }
+        
+        // Obține filtrul din POST pentru cache
+        $filter = isset($_POST['filter']) ? sanitize_text_field($_POST['filter']) : 'all';
+        
+        // Cache pentru răspunsul complet        
+        $cache_key = 'clinica_appointments_response_' . $patient_id . '_' . $filter;
+        $cached_response = wp_cache_get($cache_key, 'clinica_appointments');   
+        
+        if ($cached_response !== false) {
+            wp_send_json_success($cached_response);
+            return;
+        }
+        
+        // Query cu filtrare aplicată
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'clinica_appointments';
+        
+        // Construiește query-ul cu filtrare
+        $where_conditions = array('a.patient_id = %d');
+        $where_values = array($patient_id);
+        
+        $today = current_time('Y-m-d');
+        
+        switch ($filter) {
+            case 'upcoming':
+                $where_conditions[] = "a.appointment_date >= %s";
+                $where_values[] = $today;
+                $where_conditions[] = "a.status IN ('scheduled','confirmed')";
+                break;
+            case 'past':
+                $where_conditions[] = "a.appointment_date < %s";
+                $where_values[] = $today;
+                $where_conditions[] = "a.status IN ('completed','no_show')";
+                break;
+            case 'cancelled':
+                $where_conditions[] = "a.status = 'cancelled'";
+                break;
+            case 'all':
+            default:
+                // fără filtrare suplimentară
+                break;
+        }
+        
+        $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
+        
+        $query = "SELECT a.*, d.display_name as doctor_name
+                  FROM $table_name a 
+                  LEFT JOIN {$wpdb->users} d ON a.doctor_id = d.ID 
+                  $where_clause 
+                  ORDER BY a.appointment_date DESC, a.appointment_time DESC 
+                  LIMIT 20";
+        
+        $prepared_query = $wpdb->prepare($query, $where_values);
+        $appointments = $wpdb->get_results($prepared_query);
+        
+        if (!$appointments) {
+            $appointments = array();
+        }
+        
+        // HTML complet pentru tabelul de programări
+        $html = '<div class="patient-appointments-table-wrap">';
+        $html .= '<style>';
+        $html .= '.patient-appointments-table-wrap .appt-status-scheduled { color:#64748b; }';
+        $html .= '.patient-appointments-table-wrap .appt-status-confirmed { color:#16a34a; }';
+        $html .= '.patient-appointments-table-wrap .appt-status-completed { color:#2563eb; }';
+        $html .= '.patient-appointments-table-wrap .appt-status-cancelled { color:#dc2626; }';
+        $html .= '.patient-appointments-table-wrap .appt-status-no_show { color:#d97706; }';
+        $html .= '.patient-appointments-table-wrap .clinica-patient-btn { display:inline-block; padding:6px 12px; margin:2px; border:none; border-radius:4px; cursor:pointer; font-size:12px; text-decoration:none; }';
+        $html .= '.patient-appointments-table-wrap .clinica-patient-btn-secondary { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }';
+        $html .= '.patient-appointments-table-wrap .clinica-patient-btn-secondary:hover { background:#e2e8f0; }';
+        $html .= '.patient-appointments-table-wrap .clinica-patient-btn-disabled { background:#f8fafc; color:#94a3b8; cursor:not-allowed; }';
+        $html .= '</style>';
+        
+        if (empty($appointments)) {
+            $html .= '<div class="no-appointments"><p>Nu aveți programări în acest moment.</p></div>';
+        } else {
+            $html .= '<div class="table-responsive" style="overflow:auto; border:1px solid #e2e8f0; border-radius:6px;">';
+            $html .= '<table class="patient-appointments-table" style="width:100%; border-collapse:collapse;">';
+            $html .= '<thead style="background:#f8fafc;">';
+            $html .= '<tr>';
+            $html .= '<th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Data</th>';
+            $html .= '<th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Ora</th>';
+            $html .= '<th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Doctor</th>';
+            $html .= '<th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Status</th>';
+            $html .= '<th style="text-align:right; padding:12px; border-bottom:1px solid #e2e8f0; font-weight:600;">Acțiuni</th>';
+            $html .= '</tr>';
+            $html .= '</thead>';
+            $html .= '<tbody>';
+            
+            foreach ($appointments as $appointment) {
+                $status_class = 'appt-status-' . $appointment->status;
+                $status_text = $this->translate_status($appointment->status);
+                
+                $html .= '<tr style="border-bottom:1px solid #f1f5f9;">';
+                $html .= '<td style="padding:12px;">' . date('d.m.Y', strtotime($appointment->appointment_date)) . '</td>';
+                $html .= '<td style="padding:12px;">' . substr($appointment->appointment_time, 0, 5) . '</td>';
+                $html .= '<td style="padding:12px;">' . esc_html($appointment->doctor_name) . '</td>';
+                $html .= '<td style="padding:12px;"><span class="' . $status_class . '">' . esc_html($status_text) . '</span></td>';
+                $html .= '<td style="padding:12px; text-align:right;">';
+                
+                // Buton de anulare doar pentru programările viitoare care pot fi anulate
+                $appointment_date = strtotime($appointment->appointment_date);
+                $today = strtotime(current_time('Y-m-d'));
+                $is_future = $appointment_date >= $today;
+                $can_cancel = $is_future && !in_array($appointment->status, array('completed', 'cancelled', 'no_show'));
+                
+                if ($can_cancel) {
+                    $html .= '<button class="clinica-patient-btn clinica-patient-btn-secondary js-cancel-appointment" data-id="' . esc_attr($appointment->id) . '">Anulează</button>';
+                } else {
+                    // Nu afișăm butonul deloc pentru programările care nu pot fi anulate
+                    $html .= '<span style="opacity:.6;">-</span>';
+                }
+                
+                $html .= '</td>';
+                $html .= '</tr>';
+            }
+            
+            $html .= '</tbody></table>';
+            $html .= '</div>';
+        }
+        $html .= '</div>';
+        
+        // Adaugă JavaScript pentru funcționalitatea de anulare
+        $html .= '<script>';
+        $html .= 'jQuery(document).ready(function($) {';
+        $html .= '$(document).on("click", ".js-cancel-appointment", function(e){';
+        $html .= 'e.preventDefault();';
+        $html .= 'e.stopPropagation();';
+        $html .= 'var $btn = $(this);';
+        $html .= 'var id = $btn.data("id");';
+        $html .= 'if (!id) return;';
+        $html .= 'if (!confirm("Sigur doriți să anulați această programare?")) return;';
+        $html .= '$.ajax({';
+        $html .= 'url: "' . admin_url('admin-ajax.php') . '",';
+        $html .= 'type: "POST",';
+        $html .= 'data: {';
+        $html .= 'action: "clinica_cancel_appointment",';
+        $html .= 'appointment_id: id,';
+        $html .= 'nonce: "' . wp_create_nonce('clinica_dashboard_nonce') . '"';
+        $html .= '},';
+        $html .= 'success: function(response) {';
+        $html .= 'if (response.success) {';
+        $html .= 'location.reload();';
+        $html .= '} else {';
+        $html .= 'alert("Eroare la anulare: " + response.data);';
+        $html .= '}';
+        $html .= '},';
+        $html .= 'error: function(){ alert("Eroare la anulare"); }';
+        $html .= '});';
+        $html .= '});';
+        $html .= '});';
+        $html .= '</script>';
+        
+        $response = array(
+            'appointments' => array(),
+            'html' => $html
+        );
+        
+        // Cache pentru 10 minute
+        wp_cache_set($cache_key, $response, 'clinica_appointments', 600);
+        
+        wp_send_json_success($response);
+        return;
+        
         if (!wp_verify_nonce($_POST['nonce'], 'clinica_dashboard_nonce')) {
             wp_send_json_error('Eroare de securitate');
         }
@@ -2136,48 +2365,28 @@ class Clinica_Patient_Dashboard {
         
         $appointments = $this->get_appointments($patient_id);
 
-        // Transformă rezultatele DB în obiecte simple pentru frontend (JSON)
+        // Transformă rezultatele DB în obiecte simple pentru frontend (JSON) - VERSIUNE OPTIMIZATĂ
         $appointments_array = array();
         foreach ((array) $appointments as $a) {
-            // Prioritate 1: service_name din JOIN
-            $type_value = isset($a->service_name) ? (string) $a->service_name : '';
-            
-            // Prioritate 2: service_id numeric
-            if (empty($type_value) && isset($a->service_id) && ctype_digit($a->service_id)) {
-                $type_value = $this->get_service_name_by_id((int) $a->service_id);
-            }
-            
-            // Prioritate 3: type enum vechi
-            if (empty($type_value) && isset($a->type) && ctype_digit($a->type)) {
-                $type_value = $this->get_service_name_by_id((int) $a->type);
-            }
-            
-            // Fallback: mapare după durată
-            if (empty($type_value)) {
-                $byDuration = $this->get_service_name_by_duration(isset($a->duration) ? (int)$a->duration : 0);
-                if (!empty($byDuration)) { $type_value = $byDuration; }
-            }
-            
-            if (empty($type_value)) { $type_value = '-'; }
-            // Folosește durata din serviciu dacă există, altfel durata din programare
-            $display_duration = !empty($a->service_duration) ? (int) $a->service_duration : (isset($a->duration) ? (int) $a->duration : 0);
-            
+            // Simplificat - doar datele esențiale
             $appointments_array[] = array(
-                'id' => isset($a->id) ? (int) $a->id : (isset($a->ID) ? (int) $a->ID : 0),
-                'appointment_date' => isset($a->appointment_date) ? (string) $a->appointment_date : '',
-                'appointment_time' => isset($a->appointment_time) ? (string) $a->appointment_time : '',
-                'status' => isset($a->status) ? $this->translate_status($a->status) : 'Programată',
-                'doctor_name' => isset($a->doctor_name) ? (string) $a->doctor_name : '',
-                'type' => $type_value,
-                'duration' => $display_duration,
-                'notes' => isset($a->notes) ? (string) $a->notes : ''
+                'id' => (int) $a->id,
+                'appointment_date' => (string) $a->appointment_date,
+                'appointment_time' => (string) $a->appointment_time,
+                'status' => $this->translate_status($a->status),
+                'doctor_name' => (string) $a->doctor_name,
+                'type' => 'Consultatie', // Simplificat
+                'duration' => (int) $a->duration,
+                'notes' => (string) $a->notes
             );
         }
 
+        $html = $this->render_appointments_list($appointments);
+        
         // Returnează atât JSON cât și HTML pentru compatibilitate în UI existent
         wp_send_json_success(array(
             'appointments' => $appointments_array,
-            'html' => $this->render_appointments_list($appointments)
+            'html' => $html
         ));
     }
     
@@ -2400,12 +2609,23 @@ class Clinica_Patient_Dashboard {
      * Obține programările pacientului
      */
     private function get_appointments($patient_id) {
+        $start_time = microtime(true);
+        error_log('🔍 DEBUG: get_appointments START for patient ' . $patient_id);
+        
         global $wpdb;
         $filter = isset($_POST['filter']) ? sanitize_text_field($_POST['filter']) : 'all';
         $table_name = $wpdb->prefix . 'clinica_appointments';
 
         if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
             return array();
+        }
+
+        // Cache key pentru query
+        $cache_key = 'clinica_appointments_' . $patient_id . '_' . $filter;
+        $cached_result = wp_cache_get($cache_key, 'clinica_appointments');
+        
+        if ($cached_result !== false) {
+            return $cached_result;
         }
 
         $where = array('a.patient_id = %d');
@@ -2434,23 +2654,33 @@ class Clinica_Patient_Dashboard {
 
         $where_clause = 'WHERE ' . implode(' AND ', $where);
 
-        $query = "SELECT a.*, 
-                         COALESCE(CONCAT(um1.meta_value, ' ', um2.meta_value), d.display_name) as doctor_name,
-                         s.name as service_name,
-                         s.duration as service_duration
+        // Query simplificat temporar pentru debug
+        $query = "SELECT a.*, d.display_name as doctor_name
                   FROM $table_name a 
                   LEFT JOIN {$wpdb->users} d ON a.doctor_id = d.ID 
-                  LEFT JOIN {$wpdb->usermeta} um1 ON d.ID = um1.user_id AND um1.meta_key = 'first_name'
-                  LEFT JOIN {$wpdb->usermeta} um2 ON d.ID = um2.user_id AND um2.meta_key = 'last_name'
-                  LEFT JOIN {$wpdb->prefix}clinica_services s ON a.service_id = s.id
                   $where_clause 
-                  ORDER BY a.appointment_date DESC, a.appointment_time DESC ";
+                  ORDER BY a.appointment_date DESC, a.appointment_time DESC 
+                  LIMIT 50";
 
         $prepared = $wpdb->prepare($query, $values);
+        $query_start = microtime(true);
         $rows = $wpdb->get_results($prepared);
-        if (!$rows) {
-            return array();
+        $query_time = round((microtime(true) - $query_start) * 1000, 2);
+        // Dacă query-ul durează prea mult, folosește un fallback simplu
+        if ($query_time > 5000) { // 5 secunde
+            $fallback_query = "SELECT * FROM $table_name WHERE patient_id = %d ORDER BY appointment_date DESC LIMIT 20";
+            $fallback_prepared = $wpdb->prepare($fallback_query, $patient_id);
+            $rows = $wpdb->get_results($fallback_prepared);
         }
+        
+        if (!$rows) {
+            $rows = array();
+        }
+        
+        // Cache pentru 5 minute
+        wp_cache_set($cache_key, $rows, 'clinica_appointments', 300);
+        
+        
         return $rows;
     }
     
@@ -2465,7 +2695,15 @@ class Clinica_Patient_Dashboard {
             </div>';
         }
         
-        // Construiește tabelul (responsive) cu sortare + paginare
+        // Cache pentru HTML-ul generat
+        $cache_key = 'clinica_appointments_html_' . md5(serialize($appointments));
+        $cached_html = wp_cache_get($cache_key, 'clinica_appointments');
+        
+        if ($cached_html !== false) {
+            return $cached_html;
+        }
+        
+        // Construiește tabelul (responsive) cu sortare + paginare - VERSIUNE OPTIMIZATĂ
         ob_start();
         ?>
         <div class="patient-appointments-table-wrap">
@@ -2476,15 +2714,7 @@ class Clinica_Patient_Dashboard {
             .patient-appointments-table-wrap .appt-status-cancelled { color:#dc2626; }
             .patient-appointments-table-wrap .appt-status-no_show { color:#d97706; }
             </style>
-            <div class="table-actions" style="margin: 8px 0; display:flex; gap:12px; align-items:center;">
-                <label for="appt-rows-per-page" style="font-weight:600;">Rânduri pe pagină</label>
-                <select id="appt-rows-per-page" style="max-width:90px;">
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                </select>
-                <div id="appt-table-info" style="margin-left:auto; opacity:.8;"></div>
-            </div>
+            <!-- Controale de paginare eliminate pentru performanță -->
             <div class="table-responsive" style="overflow:auto; border:1px solid #e2e8f0; border-radius:6px;">
                 <table id="patient-appointments-table" class="patient-appointments-table" style="width:100%; border-collapse:collapse;">
                     <thead style="background:#f8fafc;">
@@ -2628,12 +2858,16 @@ class Clinica_Patient_Dashboard {
                 });
             });
 
-            // Sortare inițială: Data desc + Ora desc (prin data-key date + time până la rând stabilit)
-            doSort(0, 'date');
+            // Sortare inițială eliminată pentru performanță
         });
         </script>
         <?php
-        return ob_get_clean();
+        $html = ob_get_clean();
+        
+        // Cache pentru 5 minute
+        wp_cache_set($cache_key, $html, 'clinica_appointments', 300);
+        
+        return $html;
     }
     
     /**
@@ -3929,6 +4163,190 @@ class Clinica_Patient_Dashboard {
         }
 
         return $has_working_hours;
+    }
+
+    /**
+     * Frontend: Transfer programare din dashboard-urile frontend
+     */
+    public function ajax_frontend_transfer_appointment() {
+        // Verificare nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'clinica_dashboard_nonce')) {
+            wp_send_json_error('Eroare de securitate');
+        }
+
+        if (!is_user_logged_in()) {
+            wp_send_json_error('Nu sunteți autentificat');
+        }
+
+        $user = wp_get_current_user();
+        $user_roles = $user->roles;
+
+        // Verifică dacă utilizatorul are un rol valid pentru transfer
+        $valid_roles = array('clinica_doctor', 'clinica_assistant', 'clinica_receptionist', 'administrator');
+        $has_valid_role = false;
+        foreach ($user_roles as $role) {
+            if (in_array($role, $valid_roles)) {
+                $has_valid_role = true;
+                break;
+            }
+        }
+
+        if (!$has_valid_role) {
+            wp_send_json_error('Nu aveți permisiunea de a muta programări');
+        }
+
+        // Validează parametrii
+        $appointment_id = isset($_POST['appointment_id']) ? intval($_POST['appointment_id']) : 0;
+        $new_doctor_id = isset($_POST['new_doctor_id']) ? intval($_POST['new_doctor_id']) : 0;
+        $new_date = isset($_POST['new_date']) ? sanitize_text_field($_POST['new_date']) : '';
+        $new_time = isset($_POST['new_time']) ? sanitize_text_field($_POST['new_time']) : '';
+
+        if ($appointment_id <= 0 || $new_doctor_id <= 0 || empty($new_date) || empty($new_time)) {
+            wp_send_json_error('Parametri invalizi');
+        }
+
+        global $wpdb;
+        $table_appointments = $wpdb->prefix . 'clinica_appointments';
+
+        // Obține programarea existentă
+        $existing_appointment = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table_appointments WHERE id = %d",
+            $appointment_id
+        ));
+
+        if (!$existing_appointment) {
+            wp_send_json_error('Programarea nu a fost găsită');
+        }
+
+        // Verifică dacă programarea poate fi mutată (statusul permite transferul)
+        if (in_array($existing_appointment->status, array('completed', 'cancelled', 'no_show'))) {
+            wp_send_json_error('Programarea nu poate fi mutată (status: ' . $existing_appointment->status . ')');
+        }
+
+        // Verifică permisiunile specifice per rol
+        if (in_array('clinica_doctor', $user_roles)) {
+            // Doctor: poate muta doar programările proprii
+            if ($existing_appointment->doctor_id != $user->ID) {
+                wp_send_json_error('Nu puteți muta programările altor doctori');
+            }
+            // Doctor: nu poate muta programarea pe el însuși
+            if ($new_doctor_id == $user->ID) {
+                wp_send_json_error('Nu puteți muta programarea pe voi înșivă');
+            }
+        }
+        // Asistent și Receptionist: pot muta orice programare (fără restricții)
+
+        // Verifică dacă noul doctor există
+        $new_doctor = get_userdata($new_doctor_id);
+        if (!$new_doctor || !in_array('clinica_doctor', $new_doctor->roles)) {
+            wp_send_json_error('Doctorul selectat nu există');
+        }
+
+        // Verifică dacă data este validă și în viitor
+        $appointment_datetime = $new_date . ' ' . $new_time . ':00';
+        $appointment_timestamp = strtotime($appointment_datetime);
+        
+        if ($appointment_timestamp === false || $appointment_timestamp < time()) {
+            wp_send_json_error('Data și ora selectate nu sunt valide sau sunt în trecut');
+        }
+
+        // Obține durata din serviciul curent, nu din programarea salvată
+        $duration = max(1, (int)$existing_appointment->duration); // Fallback
+        if ($existing_appointment->service_id > 0) {
+            $service_duration = $wpdb->get_var($wpdb->prepare(
+                "SELECT duration FROM {$wpdb->prefix}clinica_services WHERE id = %d",
+                $existing_appointment->service_id
+            ));
+            if ($service_duration) {
+                $duration = (int)$service_duration;
+            }
+        }
+
+        // Calculează ora de sfârșit
+        $slotStart = new DateTime($appointment_datetime);
+        $slotEnd = (clone $slotStart)->modify('+' . $duration . ' minutes');
+
+        // Verifică conflictele cu alte programări
+        $conflicts = $wpdb->get_results($wpdb->prepare(
+            "SELECT id, appointment_time, duration FROM $table_appointments 
+             WHERE doctor_id = %d AND appointment_date = %s 
+             AND id != %d AND status NOT IN ('cancelled', 'no_show')",
+            $new_doctor_id, $new_date, $appointment_id
+        ));
+
+        foreach ($conflicts as $conflict) {
+            $conflict_start = new DateTime($new_date . ' ' . $conflict->appointment_time);
+            $conflict_end = (clone $conflict_start)->modify('+' . $conflict->duration . ' minutes');
+
+            if (($slotStart < $conflict_end) && ($slotEnd > $conflict_start)) {
+                wp_send_json_error('Există un conflict cu o altă programare la ' . $conflict->appointment_time);
+            }
+        }
+
+        // Verifică disponibilitatea doctorului
+        if (!$this->is_doctor_available_on_date($new_doctor_id, $new_date, $existing_appointment->service_id)) {
+            wp_send_json_error('Doctorul nu este disponibil în data selectată');
+        }
+
+        // Actualizează programarea
+        $update_result = $wpdb->update(
+            $table_appointments,
+            array(
+                'doctor_id' => $new_doctor_id,
+                'appointment_date' => $new_date,
+                'appointment_time' => $new_time . ':00',
+                'updated_at' => current_time('mysql')
+            ),
+            array('id' => $appointment_id),
+            array('%d', '%s', '%s', '%s'),
+            array('%d')
+        );
+
+        if ($update_result === false) {
+            wp_send_json_error('Eroare la actualizarea programării');
+        }
+
+        // Audit trail pentru transfer
+        $plugin_root = dirname(dirname(__FILE__));
+        if (!file_exists($plugin_root . '/logs')) { 
+            @mkdir($plugin_root . '/logs', 0755, true); 
+        }
+        
+        $old_doctor_name = $this->get_doctor_name_by_id($existing_appointment->doctor_id);
+        $new_doctor_name = $this->get_doctor_name_by_id($new_doctor_id);
+        
+        $user_type = in_array('clinica_doctor', $user_roles) ? 'doctor' : 
+                    (in_array('clinica_assistant', $user_roles) ? 'assistant' : 'receptionist');
+        
+        $line = sprintf(
+            "[%s] FRONTEND_TRANSFER_APPOINTMENT id=%d patient_id=%d from_doctor=%d(%s) to_doctor=%d(%s) old_date=%s old_time=%s new_date=%s new_time=%s duration=%d user_id=%d user_type=%s\n",
+            current_time('mysql'), 
+            (int)$appointment_id, 
+            (int)$existing_appointment->patient_id, 
+            (int)$existing_appointment->doctor_id, 
+            $old_doctor_name,
+            (int)$new_doctor_id, 
+            $new_doctor_name,
+            $existing_appointment->appointment_date, 
+            $existing_appointment->appointment_time,
+            $new_date, 
+            $new_time . ':00', 
+            (int)$duration,
+            $user->ID,
+            $user_type
+        );
+        @file_put_contents($plugin_root . '/logs/appointment-audit.log', $line, FILE_APPEND);
+
+        // Trimite email de notificare
+        $this->send_transfer_notification_email($existing_appointment, $new_doctor_id, $new_date, $new_time, '');
+
+        wp_send_json_success(array(
+            'message' => 'Programarea a fost mutată cu succes',
+            'appointment_id' => $appointment_id,
+            'new_doctor' => $new_doctor->display_name,
+            'new_date' => $new_date,
+            'new_time' => $new_time
+        ));
     }
 }
 

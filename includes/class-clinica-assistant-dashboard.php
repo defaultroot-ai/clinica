@@ -53,6 +53,23 @@ class Clinica_Assistant_Dashboard {
                 'nonce' => wp_create_nonce('clinica_live_updates_nonce'),
                 'pollingInterval' => 15000
             ));
+
+            // CSS pentru transfer frontend
+            wp_enqueue_style(
+                'clinica-transfer-frontend', 
+                plugin_dir_url(__FILE__) . '../assets/css/transfer-frontend.css', 
+                array(), 
+                '1.0.0'
+            );
+            
+            // JavaScript pentru transfer frontend
+            wp_enqueue_script(
+                'clinica-transfer-frontend', 
+                plugin_dir_url(__FILE__) . '../assets/js/transfer-frontend.js', 
+                array('jquery'), 
+                '1.0.0', 
+                true
+            );
         }
     }
 
@@ -218,6 +235,18 @@ class Clinica_Assistant_Dashboard {
                 </div>
             </div>
         </div>
+
+        <!-- Modal pentru transfer programări -->
+        <?php include_once plugin_dir_path(__FILE__) . '../templates/transfer-modal-frontend.php'; ?>
+
+        <script>
+        // Variabile globale pentru AJAX
+        var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+        var clinicaAjax = {
+            ajaxurl: ajaxurl,
+            nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>'
+        };
+        </script>
         <?php
         return ob_get_clean();
     }
@@ -408,6 +437,14 @@ class Clinica_Assistant_Dashboard {
             $html .= '<div class="appointment-status status-' . esc_attr($appointment['status']) . '">' . esc_html($appointment['status']) . '</div>';
             $html .= '<div class="appointment-actions">';
             $html .= '<button class="clinica-assistant-btn clinica-assistant-btn-secondary" onclick="editAppointment(' . $appointment['id'] . ')">Editează</button>';
+            
+            // Afișează butonul "Mută" doar dacă statusul permite transferul
+            if (!in_array($appointment['status'], array('completed', 'cancelled', 'no_show'))) {
+                $html .= '<button class="clinica-assistant-btn clinica-assistant-btn-primary" onclick="openTransferModalFrontend(' . $appointment['id'] . ', ' . $appointment['doctor_id'] . ', ' . $appointment['patient_id'] . ', ' . $appointment['service_id'] . ', \'' . $appointment['date'] . '\', \'' . $appointment['time'] . '\', ' . $appointment['duration'] . ', \'' . esc_js($appointment['patient_name']) . '\', \'' . esc_js($appointment['doctor_name']) . '\', \'' . esc_js($appointment['type']) . '\')">Mută</button>';
+            } else {
+                $html .= '<button class="clinica-assistant-btn clinica-assistant-btn-disabled" disabled title="Programarea nu poate fi mutată (status: ' . esc_attr($appointment['status']) . ')">Mută</button>';
+            }
+            
             $html .= '</div>';
             $html .= '</div>';
         }
@@ -539,6 +576,9 @@ class Clinica_Assistant_Dashboard {
         foreach ($appointments as $appointment) {
             $formatted_appointments[] = array(
                 'id' => intval($appointment->id),
+                'patient_id' => intval($appointment->patient_id),
+                'doctor_id' => intval($appointment->doctor_id),
+                'service_id' => intval($appointment->service_id),
                 'patient_name' => $appointment->patient_name ?: 'Pacient necunoscut',
                 'doctor_name' => $appointment->doctor_name ?: 'Doctor necunoscut',
                 'date' => $this->format_appointment_date($appointment->appointment_date),

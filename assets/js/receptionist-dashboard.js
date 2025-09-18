@@ -1368,10 +1368,22 @@
         }
     }
 
+    // Funcții globale
+    window.editAppointment = function(appointmentId) {
+        console.log(`Editare programare ${appointmentId}. Funcționalitatea va fi implementată în curând.`);
+    };
+    
+    // Face funcția loadAppointmentsData globală ca loadAppointments
+    window.loadAppointments = function() {
+        if (window.receptionistDashboard) {
+            window.receptionistDashboard.loadAppointmentsData();
+        }
+    };
+
     // Initialize dashboard when document is ready
     $(document).ready(function() {
         if ($('.clinica-receptionist-dashboard').length) {
-            new ReceptionistDashboard();
+            window.receptionistDashboard = new ReceptionistDashboard();
         }
     });
 

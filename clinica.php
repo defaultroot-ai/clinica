@@ -1537,13 +1537,14 @@ class Clinica_Plugin {
                     'clinica-patient-dashboard',
                     CLINICA_PLUGIN_URL . 'assets/js/patient-dashboard.js',
                     array('jquery'),
-                    CLINICA_VERSION . '.' . filemtime(CLINICA_PLUGIN_PATH . 'assets/js/patient-dashboard.js'),
+                    CLINICA_VERSION . '.' . (time() + rand(1, 1000)), // Forțează reîncărcarea pentru testare
                     true
                 );
                 
                 wp_localize_script('clinica-patient-dashboard', 'clinica_ajax', array(
                     'ajax_url' => admin_url('admin-ajax.php'),
-                    'nonce' => wp_create_nonce('clinica_dashboard_nonce')
+                    'nonce' => wp_create_nonce('clinica_dashboard_nonce'),
+                    'patient_id' => get_current_user_id() ?: (isset($_GET['user_id']) ? intval($_GET['user_id']) : 0)
                 ));
             }
             

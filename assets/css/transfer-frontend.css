@@ -1,0 +1,521 @@
+/**
+ * CSS pentru modal-ul de transfer programări - Frontend
+ */
+
+/* Modal overlay */
+.clinica-modal-frontend {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+/* Modal content */
+.clinica-modal-frontend-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Modal header */
+.clinica-modal-frontend-header {
+    padding: 24px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px 12px 0 0;
+}
+
+.clinica-modal-frontend-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.clinica-modal-frontend-header h3 i {
+    margin-right: 10px;
+    color: #007cba;
+    font-size: 18px;
+}
+
+.clinica-modal-frontend-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.clinica-modal-frontend-close:hover {
+    background-color: #f8f9fa;
+    color: #dc3545;
+    transform: scale(1.1);
+}
+
+/* Modal body */
+.clinica-modal-frontend-body {
+    padding: 24px;
+}
+
+/* Current appointment info */
+.transfer-current-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border-left: 4px solid #007cba;
+    box-shadow: 0 2px 8px rgba(0, 124, 186, 0.1);
+}
+
+.transfer-current-info h4 {
+    margin: 0 0 16px 0;
+    color: #2c3e50;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.current-appointment-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+}
+
+.detail-item strong {
+    color: #6c757d;
+    font-size: 11px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.detail-item span {
+    color: #2c3e50;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* Transfer form */
+.transfer-form h4 {
+    margin: 0 0 16px 0;
+    color: #2c3e50;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+/* Doctors grid */
+.doctors-grid-frontend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.doctor-btn-frontend {
+    padding: 16px 20px;
+    border: 2px solid #e9ecef;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: 500;
+    font-size: 14px;
+    color: #495057;
+    position: relative;
+    overflow: hidden;
+}
+
+.doctor-btn-frontend::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.doctor-btn-frontend:hover::before {
+    left: 100%;
+}
+
+.doctor-btn-frontend:hover {
+    border-color: #007cba;
+    background: linear-gradient(135deg, #f0f8ff 0%, #e3f2fd 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.15);
+}
+
+.doctor-btn-frontend.selected {
+    border-color: #007cba;
+    background: linear-gradient(135deg, #007cba 0%, #0056b3 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 124, 186, 0.3);
+}
+
+.doctor-btn-frontend.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+/* Calendar container */
+.calendar-container-frontend {
+    margin-bottom: 16px;
+}
+
+#transfer-date-picker-frontend {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+#transfer-date-picker-frontend:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.1);
+}
+
+/* Slots grid */
+.slots-grid-frontend {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.slot-btn-frontend {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #495057;
+    position: relative;
+    overflow: hidden;
+}
+
+.slot-btn-frontend::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.slot-btn-frontend:hover::before {
+    left: 100%;
+}
+
+.slot-btn-frontend:hover {
+    border-color: #007cba;
+    background: linear-gradient(135deg, #f0f8ff 0%, #e3f2fd 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 124, 186, 0.15);
+}
+
+.slot-btn-frontend.selected {
+    border-color: #007cba;
+    background: linear-gradient(135deg, #007cba 0%, #0056b3 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(0, 124, 186, 0.3);
+}
+
+.slot-btn-frontend.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+/* Notes textarea */
+#transfer-notes-frontend {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 80px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+#transfer-notes-frontend:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.1);
+}
+
+/* Modal footer */
+.clinica-modal-frontend-footer {
+    padding: 24px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 0 0 12px 12px;
+}
+
+/* Buttons */
+.clinica-btn-frontend {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.clinica-btn-frontend::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.clinica-btn-frontend:hover::before {
+    left: 100%;
+}
+
+.clinica-btn-frontend-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    color: white;
+    border: 2px solid #6c757d;
+}
+
+.clinica-btn-frontend-secondary:hover {
+    background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.clinica-btn-frontend-primary {
+    background: linear-gradient(135deg, #007cba 0%, #0056b3 100%);
+    color: white;
+    border: 2px solid #007cba;
+}
+
+.clinica-btn-frontend-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 124, 186, 0.3);
+}
+
+.clinica-btn-frontend-primary:disabled {
+    background: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    border-color: #e9ecef;
+}
+
+/* Stiluri pentru butoanele disabled în dashboard-uri */
+.clinica-doctor-btn-disabled,
+.clinica-assistant-btn-disabled,
+.clinica-receptionist-btn-disabled {
+    background: #e9ecef !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: #e9ecef !important;
+}
+
+.clinica-doctor-btn-disabled:hover,
+.clinica-assistant-btn-disabled:hover,
+.clinica-receptionist-btn-disabled:hover {
+    background: #e9ecef !important;
+    color: #6c757d !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Loading states */
+.clinica-btn-frontend .fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .clinica-modal-frontend-content {
+        width: 95%;
+        margin: 10px;
+        max-height: 95vh;
+    }
+    
+    .clinica-modal-frontend-header {
+        padding: 16px;
+    }
+    
+    .clinica-modal-frontend-header h3 {
+        font-size: 18px;
+    }
+    
+    .clinica-modal-frontend-body {
+        padding: 16px;
+    }
+    
+    .current-appointment-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .doctors-grid-frontend {
+        grid-template-columns: 1fr;
+    }
+    
+    .slots-grid-frontend {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    }
+    
+    .clinica-modal-frontend-footer {
+        flex-direction: column;
+        padding: 16px;
+    }
+    
+    .clinica-btn-frontend {
+        width: 100%;
+        justify-content: center;
+        padding: 14px 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .clinica-modal-frontend-content {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        max-height: 100vh;
+    }
+    
+    .clinica-modal-frontend-header {
+        border-radius: 0;
+    }
+    
+    .clinica-modal-frontend-footer {
+        border-radius: 0;
+    }
+}
+
+/* Flatpickr custom styles */
+.flatpickr-calendar {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e9ecef !important;
+}
+
+.flatpickr-day.selected {
+    background: #007cba !important;
+    border-color: #007cba !important;
+}
+
+.flatpickr-day:hover {
+    background: #f0f8ff !important;
+    border-color: #007cba !important;
+}
+
+.flatpickr-day.disabled {
+    color: #ccc !important;
+    cursor: not-allowed !important;
+}
+
+/* Animation for modal appearance */
+.clinica-modal-frontend.show {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
