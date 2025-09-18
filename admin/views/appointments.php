@@ -1406,8 +1406,10 @@ $doctors = get_users(array('role__in' => array('clinica_doctor', 'clinica_manage
                 </div>
                 
                 <div class="form-group">
-                    <label for="transfer-date-select"><?php _e('Data programării', 'clinica'); ?> <span class="required">*</span></label>
-                    <input type="date" id="transfer-date-select" required />
+                    <label for="transfer-date-picker"><?php _e('Data programării', 'clinica'); ?> <span class="required">*</span></label>
+                    <div id="transfer-calendar">
+                        <input type="text" id="transfer-date-picker" readonly />
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -1580,7 +1582,7 @@ jQuery(document).ready(function($) {
         
         // Setează data în input (convertește din Y-m-d la formatul input-ului date)
         var dateInput = transferData.date;
-        $('#transfer-date-select').val(dateInput);
+        $('#transfer-date-picker').val(dateInput);
         
         // Încarcă doctorii disponibili
         loadTransferDoctors();
@@ -1608,11 +1610,17 @@ jQuery(document).ready(function($) {
                     }
                 });
             }
+            
+            // Încarcă calendarul cu zilele disponibile pentru primul doctor (dacă există)
+            var firstDoctor = $('#transfer-doctor-select option:not(:first)').first();
+            if (firstDoctor.length) {
+                loadTransferAvailableDays(firstDoctor.val(), transferData.serviceId);
+            }
         });
     }
     
     // Când se schimbă data, resetează doctorul și sloturile
-    $('#transfer-date-select').on('change', function() {
+    $('#transfer-date-picker').on('change', function() {
         var newDate = $(this).val();
         if (newDate) {
             transferData.date = newDate;
@@ -1625,17 +1633,196 @@ jQuery(document).ready(function($) {
         }
     });
     
-    // Când se schimbă doctorul, încarcă sloturile disponibile
+    // Când se schimbă doctorul, încarcă calendarul și sloturile disponibile
     $('#transfer-doctor-select').on('change', function() {
         var doctorId = $(this).val();
         if (!doctorId) {
             $('#transfer-slot-select').html('<option value=""><?php echo esc_js(__('Selectează interval...', 'clinica')); ?></option>');
             $('#transfer-modal-confirm').prop('disabled', true);
+            // Resetează calendarul
+            resetTransferCalendar();
             return;
         }
         
-        loadTransferSlots(doctorId);
+        // Încarcă calendarul cu zilele disponibile pentru noul doctor
+        loadTransferAvailableDays(doctorId, transferData.serviceId);
+        
+        // Încarcă sloturile pentru data curentă (dacă există)
+        if (transferData.date) {
+            loadTransferSlots(doctorId);
+        }
     });
+    
+    // Încarcă zilele disponibile pentru doctorul selectat
+    function loadTransferAvailableDays(doctorId, serviceId) {
+        $.ajax({
+            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+            type: 'POST',
+            data: { 
+                action: 'clinica_get_doctor_availability_days', 
+                doctor_id: doctorId, 
+                service_id: serviceId || 0, 
+                nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>' 
+            },
+            success: function(resp){
+                var days = (resp && resp.success && Array.isArray(resp.data)) ? resp.data : [];
+                renderTransferCalendar(days);
+            },
+            error: function(){ 
+                renderTransferCalendar([]); 
+            }
+        });
+    }
+    
+    // Render calendarul de transfer cu zilele disponibile
+    function renderTransferCalendar(days) {
+        var container = document.getElementById('transfer-calendar');
+        if (!container) return;
+        
+        // Dacă nu există zile disponibile, afișează mesaj
+        if (!days || days.length === 0) {
+            container.innerHTML = '<div class="no-availability">Nu există zile disponibile pentru acest doctor și serviciu</div>';
+            return;
+        }
+        
+        // Creează input-ul pentru Flatpickr dacă nu există
+        var input = document.getElementById('transfer-date-picker');
+        if (!input) {
+            container.innerHTML = '<input type="text" id="transfer-date-picker" readonly />';
+            input = document.getElementById('transfer-date-picker');
+        }
+        
+        // Distruge instanța existentă
+        if (input._flatpickr) {
+            try { 
+                input._flatpickr.destroy(); 
+            } catch(e) {}
+        }
+        
+        // Pregătește zilele disponibile
+        var available = {};
+        (days || []).forEach(function(rec) { 
+            var d = (typeof rec === 'string') ? rec : rec.date; 
+            available[d] = rec; 
+        });
+        
+        var keys = Object.keys(available);
+        var minDate = keys.length ? keys[0] : 'today';
+        var defaultDate = keys.length ? keys[0] : 'today';
+        
+        // Verifică dacă Flatpickr este disponibil
+        if (typeof flatpickr === 'undefined') {
+            loadFlatpickrForTransfer();
+            return;
+        }
+        
+        initTransferFlatpickr(input, available, keys, minDate, defaultDate);
+    }
+    
+    // Încarcă Flatpickr pentru transfer
+    function loadFlatpickrForTransfer() {
+        function loadScript(src, cb) { 
+            var s = document.createElement('script'); 
+            s.src = src; 
+            s.onload = cb; 
+            document.head.appendChild(s); 
+        }
+        function loadCSS(href) { 
+            var l = document.createElement('link'); 
+            l.rel = 'stylesheet'; 
+            l.href = href; 
+            document.head.appendChild(l); 
+        }
+        
+        loadCSS('https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
+        loadCSS('https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css');
+        loadScript('https://cdn.jsdelivr.net/npm/flatpickr', function(){
+            loadScript('https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ro.js', function(){
+                loadScript('<?php echo CLINICA_PLUGIN_URL; ?>assets/js/romanian-holidays.js', function(){
+                    // Re-render calendarul după ce Flatpickr s-a încărcat
+                    var doctorId = $('#transfer-doctor-select').val();
+                    var serviceId = transferData.serviceId;
+                    if (doctorId) {
+                        loadTransferAvailableDays(doctorId, serviceId);
+                    }
+                });
+            });
+        });
+    }
+    
+    // Inițializează Flatpickr pentru transfer
+    function initTransferFlatpickr(input, available, keys, minDate, defaultDate) {
+        input._flatpickr = flatpickr(input, {
+            locale: (window.flatpickr && window.flatpickr.l10ns && window.flatpickr.l10ns.ro) ? 'ro' : undefined,
+            dateFormat: 'Y-m-d',
+            minDate: minDate,
+            maxDate: null,
+            defaultDate: defaultDate,
+            inline: true,
+            allowInput: false,
+            appendTo: document.getElementById('transfer-calendar'),
+            showMonths: 1,
+            disable: [function(date){
+                // Dezactivează weekend-urile și datele indisponibile
+                if (date.getDay() === 0 || date.getDay() === 6) return true;
+                
+                var s = date.getFullYear() + '-' + 
+                       String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(date.getDate()).padStart(2, '0');
+                var isAvailable = available[s] && !available[s].full;
+                return !isAvailable;
+            }],
+            onDayCreate: function(dObj, dStr, fp, dayElem){
+                if (!dayElem || !dayElem.dateObj) return;
+                
+                var s = dayElem.dateObj.getFullYear() + '-' + 
+                       String(dayElem.dateObj.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(dayElem.dateObj.getDate()).padStart(2, '0');
+                
+                // Verifică sărbătorile legale românești
+                if (window.ClinicaRomanianHolidays && window.ClinicaRomanianHolidays.isHoliday) {
+                    if (window.ClinicaRomanianHolidays.isHoliday(s)) {
+                        dayElem.classList.add('legal-holiday');
+                        dayElem.title = window.ClinicaRomanianHolidays.getHolidayName ? window.ClinicaRomanianHolidays.getHolidayName(s) : 'Sărbătoare';
+                    }
+                }
+                
+                if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) { 
+                    dayElem.classList.add('weekend'); 
+                }
+                if (available[s] && available[s].full) { 
+                    dayElem.classList.add('full'); 
+                    dayElem.title = 'Zi plină'; 
+                }
+            },
+            onChange: function(selectedDates, dateStr, fp){
+                if (!dateStr) return;
+                $('#transfer-date-picker').val(dateStr);
+                transferData.date = dateStr;
+                validateTransferForm();
+            }
+        });
+        
+        // Setează prima zi disponibilă
+        if (keys.length && input._flatpickr) { 
+            input._flatpickr.setDate(keys[0], true); 
+        }
+    }
+    
+    // Resetează calendarul de transfer
+    function resetTransferCalendar() {
+        var input = document.getElementById('transfer-date-picker');
+        if (input && input._flatpickr) {
+            try {
+                input._flatpickr.destroy();
+                input._flatpickr = null;
+            } catch(e) {}
+        }
+        var container = document.getElementById('transfer-calendar');
+        if (container) {
+            container.innerHTML = '<input type="text" id="transfer-date-picker" readonly />';
+        }
+    }
     
     // Încarcă sloturile disponibile pentru doctorul selectat
     function loadTransferSlots(doctorId) {
@@ -1673,7 +1860,7 @@ jQuery(document).ready(function($) {
     
     // Validează formularul de mutare
     function validateTransferForm() {
-        var date = $('#transfer-date-select').val();
+        var date = $('#transfer-date-picker').val();
         var doctor = $('#transfer-doctor-select').val();
         var slot = $('#transfer-slot-select').val();
         var isValid = date && doctor && slot;
@@ -1681,11 +1868,11 @@ jQuery(document).ready(function($) {
     }
     
     // Validează la schimbarea câmpurilor
-    $('#transfer-date-select, #transfer-doctor-select, #transfer-slot-select').on('change', validateTransferForm);
+    $('#transfer-date-picker, #transfer-doctor-select, #transfer-slot-select').on('change', validateTransferForm);
     
     // Confirmă mutarea
     $('#transfer-modal-confirm').on('click', function() {
-        var newDate = $('#transfer-date-select').val();
+        var newDate = $('#transfer-date-picker').val();
         var doctorId = $('#transfer-doctor-select').val();
         var slot = $('#transfer-slot-select').val();
         var notes = $('#transfer-notes').val();
@@ -1747,12 +1934,14 @@ jQuery(document).ready(function($) {
     function closeTransferModal() {
         $('#clinica-transfer-modal').removeClass('is-visible').hide();
         // Resetează formularul
-        $('#transfer-date-select').val('');
+        $('#transfer-date-picker').val('');
         $('#transfer-doctor-select').val('');
         $('#transfer-slot-select').html('<option value=""><?php echo esc_js(__('Selectează interval...', 'clinica')); ?></option>');
         $('#transfer-notes').val('');
         $('#transfer-send-email').prop('checked', true);
         $('#transfer-modal-confirm').prop('disabled', true);
+        // Resetează calendarul
+        resetTransferCalendar();
     }
     
     // Event handlers pentru modalul de mutare
@@ -2083,6 +2272,54 @@ jQuery(document).ready(function($) {
 .current-appointment-info p {
     margin: 5px 0;
     color: #666;
+}
+
+/* Stiluri pentru calendarul de transfer */
+#transfer-calendar {
+    min-height: 300px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    background: #fff;
+}
+
+#transfer-calendar .no-availability {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+    font-style: italic;
+}
+
+#transfer-calendar .flatpickr-calendar {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: 1px solid #ddd;
+}
+
+#transfer-calendar .flatpickr-day.legal-holiday {
+    background-color: #ffebee;
+    color: #c62828;
+    font-weight: bold;
+}
+
+#transfer-calendar .flatpickr-day.weekend {
+    background-color: #f5f5f5;
+    color: #999;
+}
+
+#transfer-calendar .flatpickr-day.full {
+    background-color: #ffcdd2;
+    color: #d32f2f;
+    text-decoration: line-through;
+}
+
+#transfer-calendar .flatpickr-day:hover:not(.disabled) {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+#transfer-calendar .flatpickr-day.selected {
+    background-color: #2196f3;
+    color: #fff;
 }
 
 /* Modal visibility */
