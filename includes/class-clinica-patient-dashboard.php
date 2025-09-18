@@ -3042,12 +3042,22 @@ class Clinica_Patient_Dashboard {
             wp_send_json_error('Eroare de securitate');
         }
         if (!is_user_logged_in()) { wp_send_json_error('Neautorizat'); }
+
+        // Cache pentru doctori - 30 minute
+        $cache_key = 'doctors_for_service';
+        $cached_doctors = wp_cache_get($cache_key, 'clinica_doctors');
+        if ($cached_doctors !== false) {
+            wp_send_json_success($cached_doctors);
+        }
         
         $users = get_users(array('role__in' => array('clinica_doctor', 'clinica_manager')));
         $doctors = array();
         foreach ($users as $u) {
             $doctors[] = array('id' => $u->ID, 'name' => $u->display_name);
         }
+        
+        // Cache rezultatul pentru 30 minute
+        wp_cache_set($cache_key, $doctors, 'clinica_doctors', 1800);
         wp_send_json_success($doctors);
     }
 
@@ -3058,6 +3068,13 @@ class Clinica_Patient_Dashboard {
         $doctor_id = isset($_POST['doctor_id']) ? intval($_POST['doctor_id']) : 0;
         $service_id = isset($_POST['service_id']) ? intval($_POST['service_id']) : 0;
         if ($doctor_id <= 0) { wp_send_json_error('Doctor invalid'); }
+
+        // Cache pentru zilele disponibile - 10 minute
+        $cache_key = 'doctor_days_' . $doctor_id . '_' . $service_id;
+        $cached_days = wp_cache_get($cache_key, 'clinica_days');
+        if ($cached_days !== false) {
+            wp_send_json_success($cached_days);
+        }
 
         // Program per-doctor din user meta, fallback global
         $doctor_schedule = get_user_meta($doctor_id, 'clinica_working_hours', true);
@@ -3149,6 +3166,8 @@ class Clinica_Patient_Dashboard {
             $date->modify('+1 day');
         }
         
+        // Cache rezultatul pentru 10 minute
+        wp_cache_set($cache_key, $days, 'clinica_days', 600);
         wp_send_json_success($days);
     }
 
@@ -3161,6 +3180,13 @@ class Clinica_Patient_Dashboard {
         $req_duration = isset($_POST['duration']) ? intval($_POST['duration']) : 0;
         $service_id = isset($_POST['service_id']) ? intval($_POST['service_id']) : 0;
         if ($doctor_id <= 0 || empty($day)) { wp_send_json_error('Parametri invalizi'); }
+
+        // Cache pentru sloturi - 5 minute
+        $cache_key = 'doctor_slots_' . $doctor_id . '_' . $service_id . '_' . $day . '_' . $req_duration;
+        $cached_slots = wp_cache_get($cache_key, 'clinica_slots');
+        if ($cached_slots !== false) {
+            wp_send_json_success($cached_slots);
+        }
 
         // Dacă avem service_id, verifică dacă există timeslots specifice
         if ($service_id > 0) {
@@ -3187,10 +3213,14 @@ class Clinica_Patient_Dashboard {
                     $formatted_slots[] = $start_time . ' - ' . $end_time;
                 }
                 
+                // Cache rezultatul pentru 5 minute
+                wp_cache_set($cache_key, $formatted_slots, 'clinica_slots', 300);
                 wp_send_json_success($formatted_slots);
             } else {
                 // Dacă nu există timeslots specifice pentru serviciu, nu returnează sloturi
-                wp_send_json_success(array());
+                $empty_slots = array();
+                wp_cache_set($cache_key, $empty_slots, 'clinica_slots', 300);
+                wp_send_json_success($empty_slots);
             }
         }
 
@@ -3316,6 +3346,8 @@ class Clinica_Patient_Dashboard {
             $cursor->modify('+' . $step . ' minutes');
         }
 
+        // Cache rezultatul pentru 5 minute
+        wp_cache_set($cache_key, $slots, 'clinica_slots', 300);
         wp_send_json_success($slots);
     }
 
