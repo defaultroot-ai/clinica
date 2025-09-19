@@ -85,8 +85,9 @@
 
         function loadOverviewData() {
             console.log('Loading overview data...');
+            const action = clinicaAssistantAjax.actions ? clinicaAssistantAjax.actions.overview : 'clinica_assistant_dashboard_overview';
             $.post(clinicaAssistantAjax.ajaxurl, {
-                action: 'clinica_assistant_dashboard_overview',
+                action: action,
                 nonce: clinicaAssistantAjax.nonce
             }, function(resp) {
                 console.log('Overview response received:', resp);
@@ -169,12 +170,13 @@
 
         function loadAppointments() {
             const content = $('.clinica-assistant-tab-content[data-tab="appointments"]');
+            const action = clinicaAssistantAjax.actions ? clinicaAssistantAjax.actions.appointments : 'clinica_assistant_dashboard_appointments';
             
             $.ajax({
                 url: clinicaAssistantAjax.ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'clinica_assistant_dashboard_appointments',
+                    action: action,
                     nonce: clinicaAssistantAjax.nonce
                 },
                 success: function(response) {
@@ -188,20 +190,18 @@
                     content.html('<div class="clinica-error">Eroare la încărcarea programărilor. Vă rugăm să reîncercați.</div>');
                 }
             });
-            
-            // Încarcă și programările pentru tabul de prezentare generală
-            loadOverviewAppointments();
         }
         
         // Face funcția loadAppointments globală
         window.loadAppointments = loadAppointments;
         
         function loadOverviewAppointments() {
+            const action = clinicaAssistantAjax.actions ? clinicaAssistantAjax.actions.appointments : 'clinica_assistant_dashboard_appointments';
             $.ajax({
                 url: clinicaAssistantAjax.ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'clinica_assistant_dashboard_appointments',
+                    action: action,
                     nonce: clinicaAssistantAjax.nonce
                 },
                 success: function(response) {
@@ -209,12 +209,18 @@
                         // Populează tabelul din tabul de prezentare generală
                         const tbody = $('#assistant-appointments-tbody');
                         if (tbody.length) {
-                            // Extrage doar rândurile din tabelul de programări
-                            const appointmentsTable = $(response.data.html).find('table tbody');
+                            // Extrage doar rândurile din tabelul de programări (acum sunt div-uri)
+                            const appointmentsTable = $(response.data.html).find('.clinica-assistant-appointments-table');
                             if (appointmentsTable.length) {
-                                tbody.html(appointmentsTable.html());
+                                // Extrage doar rândurile de programări (fără header)
+                                const appointmentItems = appointmentsTable.find('.clinica-assistant-appointment-item');
+                                if (appointmentItems.length > 0) {
+                                    tbody.html(appointmentItems);
+                                } else {
+                                    tbody.html('<div class="no-appointments"><p>Nu există programări</p></div>');
+                                }
                             } else {
-                                tbody.html('<tr><td colspan="6" class="text-center">Nu există programări</td></tr>');
+                                tbody.html('<div class="no-appointments"><p>Nu există programări</p></div>');
                             }
                         }
                     } else {
@@ -406,7 +412,7 @@
                 url: clinicaAssistantAjax.ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'clinica_assistant_dashboard_calendar',
+                    action: clinicaAssistantAjax.actions ? clinicaAssistantAjax.actions.calendar : 'clinica_assistant_dashboard_calendar',
                     nonce: clinicaAssistantAjax.nonce
                 },
                 success: function(response) {
@@ -445,7 +451,7 @@
                 url: clinicaAssistantAjax.ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'clinica_assistant_dashboard_reports',
+                    action: clinicaAssistantAjax.actions ? clinicaAssistantAjax.actions.reports : 'clinica_assistant_dashboard_reports',
                     nonce: clinicaAssistantAjax.nonce
                 },
                 success: function(response) {
@@ -775,7 +781,7 @@
             });
             
             const ajaxData = {
-                action: 'clinica_assistant_dashboard_patients',
+                action: clinicaAssistantAjax.actions ? clinicaAssistantAjax.actions.patients : 'clinica_assistant_dashboard_patients',
                 nonce: clinicaAssistantAjax.nonce,
                 page: currentPatientsPage,
                 per_page: 20,
@@ -1602,7 +1608,7 @@
             $.post(clinicaAssistantAjax.ajaxurl, { 
                 action: 'clinica_get_doctors_for_service', 
                 service_id: serviceId, 
-                nonce: clinicaAssistantAjax.dashboard_nonce
+                nonce: clinicaAssistantAjax.nonce
             }, function(resp) {
                 console.log('Răspuns doctori:', resp);
                 if (resp && resp.success && Array.isArray(resp.data)) {
@@ -1643,7 +1649,7 @@
                 action: 'clinica_get_doctor_availability_days', 
                 doctor_id: doctorId, 
                 service_id: serviceId, 
-                nonce: clinicaAssistantAjax.dashboard_nonce
+                nonce: clinicaAssistantAjax.nonce
             }, function(resp) {
                 console.log('Răspuns zile disponibile:', resp);
                 const days = (resp && resp.success && Array.isArray(resp.data)) ? resp.data : [];
@@ -1749,7 +1755,7 @@
                 day: day, 
                 duration: duration,
                 service_id: serviceId,
-                nonce: clinicaAssistantAjax.dashboard_nonce
+                nonce: clinicaAssistantAjax.nonce
             }, function(resp) {
                 console.log('Răspuns sloturi:', resp);
                 if (resp && resp.success && Array.isArray(resp.data)) {

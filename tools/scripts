@@ -1,0 +1,214 @@
+<?php
+/**
+ * Adăugare rol clinica_patient pentru toți utilizatorii staff - VERSIUNE CORECTATĂ
+ */
+
+require_once('wp-load.php');
+require_once('wp-content/plugins/clinica/includes/class-clinica-roles.php');
+
+echo "<h1>🔄 ADĂUGARE ROL PACIENT PENTRU STAFF - CORECTAT</h1>";
+
+// 1. Identifică utilizatorii staff direct din baza de date
+echo "<h2>1. Identificare Utilizatori Staff din Baza de Date</h2>";
+
+global $wpdb;
+$patients_table = $wpdb->prefix . 'clinica_patients';
+
+$expected_staff_cnps = [
+    'doctor' => ['2741211141046', '2750131080043', '1930729046218'],
+    'receptionist' => ['2870125082352'],
+    'assistant' => ['2970806080045', '2731128080025']
+];
+
+$staff_users = [];
+
+foreach ($expected_staff_cnps as $role => $cnps) {
+    foreach ($cnps as $cnp) {
+        $user_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT user_id FROM $patients_table WHERE cnp = %s",
+            $cnp
+        ));
+        
+        if ($user_id) {
+            $user = get_user_by('ID', $user_id);
+            if ($user) {
+                $staff_users[] = [
+                    'user' => $user,
+                    'cnp' => $cnp,
+                    'expected_role' => $role,
+                    'current_roles' => $user->roles,
+                    'has_patient_role' => in_array('clinica_patient', $user->roles)
+                ];
+            }
+        }
+    }
+}
+
+echo "<h3>Utilizatori Staff Identificați:</h3>";
+echo "<table border='1' style='border-collapse: collapse; width: 100%;'>";
+echo "<tr style='background-color: #f0f0f0;'><th>ID</th><th>Nume</th><th>Email</th><th>CNP</th><th>Rol Așteptat</th><th>Roluri Actuale</th><th>Are Rol Pacient?</th><th>Acțiune</th></tr>";
+
+foreach ($staff_users as $staff_data) {
+    $user = $staff_data['user'];
+    $has_patient = $staff_data['has_patient_role'] ? '✅ DA' : '❌ NU';
+    $action = $staff_data['has_patient_role'] ? 'Nu necesită' : 'Va fi adăugat';
+    $row_style = $staff_data['has_patient_role'] ? 'background-color: #d4edda;' : 'background-color: #fff3cd;';
+    
+    echo "<tr style='$row_style'>";
+    echo "<td>" . $user->ID . "</td>";
+    echo "<td>" . $user->display_name . "</td>";
+    echo "<td>" . $user->user_email . "</td>";
+    echo "<td>" . $staff_data['cnp'] . "</td>";
+    echo "<td><strong>" . $staff_data['expected_role'] . "</strong></td>";
+    echo "<td>" . implode(', ', $staff_data['current_roles']) . "</td>";
+    echo "<td>" . $has_patient . "</td>";
+    echo "<td>" . $action . "</td>";
+    echo "</tr>";
+}
+echo "</table>";
+
+// 2. Adaugă rolul clinica_patient pentru staff care nu îl au
+echo "<h2>2. Adăugare Rol Pacient pentru Staff</h2>";
+
+$added_count = 0;
+$already_had_count = 0;
+
+foreach ($staff_users as $staff_data) {
+    $user = $staff_data['user'];
+    
+    if (!$staff_data['has_patient_role']) {
+        $user->add_role('clinica_patient');
+        echo "<p style='color: green;'>✅ Am adăugat rolul <strong>clinica_patient</strong> pentru <strong>" . $user->display_name . "</strong> (ID: " . $user->ID . ", CNP: " . $staff_data['cnp'] . ")</p>";
+        $added_count++;
+    } else {
+        echo "<p style='color: blue;'>ℹ️ <strong>" . $user->display_name . "</strong> (ID: " . $user->ID . ") are deja rolul clinica_patient</p>";
+        $already_had_count++;
+    }
+}
+
+// 3. Verificare finală
+echo "<h2>3. Verificare Finală</h2>";
+
+$final_staff_users = [];
+foreach ($staff_users as $staff_data) {
+    $user = get_user_by('ID', $staff_data['user']->ID); // Reîncarcă utilizatorul
+    $final_staff_users[] = [
+        'user' => $user,
+        'cnp' => $staff_data['cnp'],
+        'expected_role' => $staff_data['expected_role'],
+        'current_roles' => $user->roles,
+        'has_patient_role' => in_array('clinica_patient', $user->roles)
+    ];
+}
+
+echo "<h3>Status Final Staff cu Rol Pacient:</h3>";
+echo "<table border='1' style='border-collapse: collapse; width: 100%;'>";
+echo "<tr style='background-color: #f0f0f0;'><th>ID</th><th>Nume</th><th>Email</th><th>CNP</th><th>Rol Staff</th><th>Rol Pacient</th><th>Status</th></tr>";
+
+$all_correct = true;
+foreach ($final_staff_users as $staff_data) {
+    $user = $staff_data['user'];
+    $has_patient = $staff_data['has_patient_role'] ? '✅ DA' : '❌ NU';
+    $status = $staff_data['has_patient_role'] ? '✅ CORECT' : '❌ LIPSĂ';
+    $row_style = $staff_data['has_patient_role'] ? 'background-color: #d4edda;' : 'background-color: #f8d7da;';
+    
+    if (!$staff_data['has_patient_role']) {
+        $all_correct = false;
+    }
+    
+    echo "<tr style='$row_style'>";
+    echo "<td>" . $user->ID . "</td>";
+    echo "<td>" . $user->display_name . "</td>";
+    echo "<td>" . $user->user_email . "</td>";
+    echo "<td>" . $staff_data['cnp'] . "</td>";
+    echo "<td><strong>" . $staff_data['expected_role'] . "</strong></td>";
+    echo "<td>" . $has_patient . "</td>";
+    echo "<td>" . $status . "</td>";
+    echo "</tr>";
+}
+echo "</table>";
+
+// 4. Statistici finale
+echo "<h2>4. Statistici</h2>";
+echo "<ul>";
+echo "<li><strong>Total utilizatori staff identificați:</strong> " . count($staff_users) . "</li>";
+echo "<li><strong>Roluri pacienți adăugate:</strong> " . $added_count . "</li>";
+echo "<li><strong>Utilizatori care aveau deja rolul de pacient:</strong> " . $already_had_count . "</li>";
+echo "</ul>";
+
+if ($all_correct) {
+    echo "<p style='color: green; font-size: 18px; font-weight: bold;'>🎉 SUCCES! Toți utilizatorii staff au acum dublu rol (staff + pacient)!</p>";
+} else {
+    echo "<p style='color: red; font-size: 18px; font-weight: bold;'>❌ Încă există utilizatori staff fără rolul de pacient!</p>";
+}
+
+echo "<h2>5. Beneficii Dublu Rol</h2>";
+echo "<ul>";
+echo "<li>✅ Staff-ul poate accesa dashboard-ul de pacient</li>";
+echo "<li>✅ Staff-ul poate vedea programările proprii</li>";
+echo "<li>✅ Staff-ul poate gestiona datele personale</li>";
+echo "<li>✅ Staff-ul poate face programări pentru sine</li>";
+echo "<li>✅ Flexibilitate completă în sistem</li>";
+echo "<li>✅ Staff-ul poate vedea istoricul medical propriu</li>";
+echo "<li>✅ Staff-ul poate gestiona familia proprie</li>";
+echo "</ul>";
+
+// 5. Verificare suplimentară - toți utilizatorii cu roluri clinica
+echo "<h2>6. Verificare Suplimentară - Toți Utilizatorii cu Roluri Clinica</h2>";
+
+$all_users = get_users(array(
+    'orderby' => 'ID',
+    'order' => 'ASC',
+    'fields' => array('ID', 'user_login', 'display_name', 'user_email', 'roles')
+));
+
+$clinica_users = [];
+foreach ($all_users as $user) {
+    $clinica_roles = [];
+    foreach ($user->roles as $role) {
+        if (strpos($role, 'clinica_') === 0) {
+            $clinica_roles[] = $role;
+        }
+    }
+    
+    if (!empty($clinica_roles)) {
+        $clinica_users[] = [
+            'user' => $user,
+            'clinica_roles' => $clinica_roles
+        ];
+    }
+}
+
+echo "<h3>Toți Utilizatorii cu Roluri Clinica:</h3>";
+echo "<table border='1' style='border-collapse: collapse; width: 100%;'>";
+echo "<tr style='background-color: #f0f0f0;'><th>ID</th><th>Nume</th><th>Email</th><th>Roluri Clinica</th><th>Este Staff?</th></tr>";
+
+$staff_roles = ['clinica_doctor', 'clinica_assistant', 'clinica_receptionist', 'clinica_manager', 'clinica_administrator'];
+
+foreach ($clinica_users as $user_data) {
+    $user = $user_data['user'];
+    $is_staff = false;
+    $staff_role = '';
+    
+    foreach ($user_data['clinica_roles'] as $role) {
+        if (in_array($role, $staff_roles)) {
+            $is_staff = true;
+            $staff_role = $role;
+            break;
+        }
+    }
+    
+    $is_staff_text = $is_staff ? '✅ DA (' . $staff_role . ')' : '❌ NU';
+    $row_style = $is_staff ? 'background-color: #d4edda;' : 'background-color: #f8d7da;';
+    
+    echo "<tr style='$row_style'>";
+    echo "<td>" . $user->ID . "</td>";
+    echo "<td>" . $user->display_name . "</td>";
+    echo "<td>" . $user->user_email . "</td>";
+    echo "<td>" . implode(', ', $user_data['clinica_roles']) . "</td>";
+    echo "<td>" . $is_staff_text . "</td>";
+    echo "</tr>";
+}
+echo "</table>";
+
+?>

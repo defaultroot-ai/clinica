@@ -447,22 +447,22 @@ class Clinica_Plugin {
                 'content' => '[clinica_patient_dashboard]'
             ),
             array(
-                'title' => 'Dashboard Doctor',
+                'title' => 'Portal Doctor',
                 'slug' => 'clinica-doctor-dashboard',
                 'content' => '[clinica_doctor_dashboard]'
             ),
             array(
-                'title' => 'Dashboard Asistent',
+                'title' => 'Portal Asistent',
                 'slug' => 'clinica-assistant-dashboard',
                 'content' => '[clinica_assistant_dashboard]'
             ),
             array(
-                'title' => 'Dashboard Manager',
+                'title' => 'Portal Manager',
                 'slug' => 'clinica-manager-dashboard',
                 'content' => '[clinica_manager_dashboard]'
             ),
             array(
-                'title' => 'Dashboard Receptionist',
+                'title' => 'Portal Receptionist',
                 'slug' => 'clinica-receptionist-dashboard',
                 'content' => '[clinica_receptionist_dashboard]'
             ),
@@ -705,6 +705,9 @@ class Clinica_Plugin {
         
         // Initializeaza setările
         $this->settings = Clinica_Settings::get_instance();
+        
+        // Initializeaza managerul de servicii (înainte de dashboard-uri)
+        Clinica_Services_Manager::get_instance();
         
         // Initializeaza dashboard-urile
         if (class_exists('Clinica_Patient_Dashboard')) {
