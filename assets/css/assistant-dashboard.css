@@ -41,7 +41,7 @@ body:has(.clinica-assistant-dashboard) .clinica-assistant-dashboard {
     text-align: center;
     margin-bottom: 5px;
     padding: 30px;
-    background: linear-gradient(180deg, #0a66c2 0%, #084f90 100%);
+    background: #2c5aa0;
     color: white;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -67,7 +67,7 @@ body:has(.clinica-assistant-dashboard) .clinica-assistant-dashboard {
     margin: 0 0 10px 0;
     font-size: 2.5em;
     font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: white;
 }
 
 .clinica-assistant-header .subtitle {
@@ -335,30 +335,131 @@ body:has(.clinica-assistant-dashboard) .clinica-assistant-dashboard {
     font-size: 1.1em;
 }
 
+/* Header pentru tabel - v1.1.0 */
+.appointments-header {
+    display: grid;
+    grid-template-columns: 1fr 0.8fr 0.8fr 1.5fr 2fr 1.8fr 0.8fr 1.5fr;
+    padding: 15px 0;
+    background: #2c5aa0;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 8px 8px 0 0;
+    width: 100%;
+    gap: 20px;
+}
+
+.appointments-header > div {
+    padding: 0 10px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.header-date { }
+.header-day { }
+.header-time { }
+.header-doctor { }
+.header-patient { }
+.header-service { }
+.header-status { text-align: left; justify-content: flex-start; }
+.header-actions { 
+    text-align: center !important; 
+    justify-content: center !important; 
+    display: flex;
+    align-items: center;
+}
+
+.clinica-assistant-appointments-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .clinica-assistant-appointment-item,
 .clinica-assistant-patient-item {
     background: white;
-    padding: 20px;
-    margin-bottom: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px 0;
+    border-bottom: 1px solid #e9ecef;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
-    gap: 15px;
+    grid-template-columns: 1fr 0.8fr 0.8fr 1.5fr 2fr 1.8fr 0.8fr 1.5fr;
     align-items: center;
+    width: 100%;
+    gap: 20px;
+}
+
+.clinica-assistant-appointment-item > div,
+.clinica-assistant-patient-item > div {
+    padding: 0 10px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.appointment-date { }
+.appointment-day { }
+.appointment-time { }
+.appointment-doctor { }
+.appointment-patient { }
+.appointment-type { }
+.appointment-status { 
+    text-align: left; 
+    justify-content: flex-start; 
+    display: flex;
+    align-items: center;
+}
+.appointment-actions { 
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    text-align: center;
+}
+
+.appointment-actions .clinica-assistant-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    min-width: 70px;
+    white-space: nowrap;
+}
+
+.clinica-assistant-appointment-item:last-child {
+    border-bottom: none;
 }
 
 .clinica-assistant-appointment-item:hover,
 .clinica-assistant-patient-item:hover {
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-    transition: all 0.3s ease;
+    background: #f8f9fa;
+    transition: background 0.2s ease;
 }
 
+.appointment-date,
+.appointment-day,
 .appointment-time,
 .patient-name {
     font-weight: 600;
     color: #333;
+}
+
+.appointment-date {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.appointment-day {
+    font-size: 0.9em;
+    color: #0a66c2;
+    font-weight: 500;
 }
 
 .appointment-patient,
@@ -376,6 +477,25 @@ body:has(.clinica-assistant-dashboard) .clinica-assistant-dashboard {
 .appointment-status,
 .patient-phone {
     font-size: 0.9em;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.appointment-status.status-confirmed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.appointment-status.status-completed {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.appointment-status.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
 }
 
 .patient-last-visit {

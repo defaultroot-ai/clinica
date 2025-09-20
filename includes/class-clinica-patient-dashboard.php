@@ -1392,19 +1392,57 @@ class Clinica_Patient_Dashboard {
 
             function loadBookingPatients(){
                 // Eu + membrii familiei
-                var options = '<option value="'+patientId+'">Eu</option>';
+                var options = '<option value="'+patientId+'">👤 Eu</option>';
+                
                 // Încercăm să citim membrii familiei (dacă există Family Manager pe backend)
                 $.ajax({
                     url: '<?php echo admin_url('admin-ajax.php'); ?>',
                     type: 'POST',
                     data: { action: 'clinica_get_patient_family', patient_id: patientId, nonce: '<?php echo wp_create_nonce('clinica_dashboard_nonce'); ?>' },
                     success: function(resp){
-                        if (resp && resp.success && resp.data && resp.data.members) {
-                            // extrage textul și caută cardurile pentru nume dacă se dorește mai târziu
+                        if (resp && resp.success && resp.data && resp.data.members_data) {
+                            // Procesează membrii familiei din datele JSON
+                            var membersData = resp.data.members_data;
+                            
+                            // Adaugă fiecare membru al familiei în dropdown
+                            membersData.forEach(function(member) {
+                                if (member.user_id && member.user_id != patientId) {
+                                    var roleIcon = getFamilyRoleIcon(member.role_label);
+                                    var roleLabel = member.role_label;
+                                    options += '<option value="' + member.user_id + '">' + 
+                                              roleIcon + ' ' + member.display_name + ' (' + roleLabel + ')</option>';
+                                }
+                            });
                         }
+                        
+                        // Actualizează dropdown-ul cu toate opțiunile
+                        $('#booking-patient').html(options);
+                    },
+                    error: function() {
+                        // Fallback la doar "Eu" dacă eșuează
+                        $('#booking-patient').html(options);
                     }
                 });
-                $('#booking-patient').html(options);
+            }
+            
+            // Funcție helper pentru iconițe roluri familie
+            function getFamilyRoleIcon(roleText) {
+                if (roleText.includes('Reprezentant') || roleText.includes('Cap')) return '👑';
+                if (roleText.includes('Soț') || roleText.includes('Soție')) return '💑';
+                if (roleText.includes('Copil')) return '👶';
+                if (roleText.includes('Părinte')) return '👨‍👩‍👧‍👦';
+                if (roleText.includes('Frate') || roleText.includes('Soră')) return '👫';
+                return '👤';
+            }
+            
+            // Funcție helper pentru etichete roluri familie
+            function getFamilyRoleLabel(roleText) {
+                if (roleText.includes('Reprezentant') || roleText.includes('Cap')) return 'Reprezentant familie';
+                if (roleText.includes('Soț') || roleText.includes('Soție')) return 'Soț/Soție';
+                if (roleText.includes('Copil')) return 'Copil';
+                if (roleText.includes('Părinte')) return 'Părinte';
+                if (roleText.includes('Frate') || roleText.includes('Soră')) return 'Frate/Soră';
+                return roleText;
             }
 
             function loadServices(){
@@ -3544,6 +3582,8 @@ class Clinica_Patient_Dashboard {
         
         // Render membrii familiei
         $members_html = '<div class="family-members-list">';
+        $members_data = array(); // Datele membrilor pentru JavaScript
+        
         if (empty($family_members)) {
             $members_html .= '<div class="no-family-members">
                 <p>Nu există alți membri în familie.</p>
@@ -3555,8 +3595,20 @@ class Clinica_Patient_Dashboard {
                     $first_name = isset($member->first_name) ? $member->first_name : '';
                     $last_name = isset($member->last_name) ? $member->last_name : '';
                     $display_name = isset($member->display_name) ? $member->display_name : ($first_name . ' ' . $last_name);
+                    $role_label = $family_manager->get_family_role_label($member->family_role);
                     
-                    $members_html .= '<div class="family-member-card">
+                    // Adaugă datele membrului pentru JavaScript
+                    $members_data[] = array(
+                        'user_id' => $member->user_id,
+                        'display_name' => $display_name,
+                        'first_name' => $first_name,
+                        'last_name' => $last_name,
+                        'family_role' => $member->family_role,
+                        'role_label' => $role_label,
+                        'age' => $this->calculate_age($member->birth_date)
+                    );
+                    
+                    $members_html .= '<div class="family-member-card" data-user-id="' . $member->user_id . '">
                         <div class="member-avatar">
                             <div class="avatar-placeholder">
                                 ' . strtoupper(substr($first_name, 0, 1) . substr($last_name, 0, 1)) . '
@@ -3564,7 +3616,7 @@ class Clinica_Patient_Dashboard {
                         </div>
                         <div class="member-info">
                             <h5>' . esc_html($display_name) . '</h5>
-                            <p class="member-role">' . esc_html($family_manager->get_family_role_label($member->family_role)) . '</p>
+                            <p class="member-role">' . esc_html($role_label) . '</p>
                             <p class="member-age">' . esc_html($this->calculate_age($member->birth_date)) . ' ani</p>
                         </div>
                     </div>';
@@ -3576,22 +3628,80 @@ class Clinica_Patient_Dashboard {
         
         return array(
             'status' => $status_html,
-            'members' => $members_html
+            'members' => $members_html,
+            'members_data' => $members_data // Datele membrilor pentru JavaScript
         );
+    }
+    
+    /**
+     * Verifică dacă doi utilizatori sunt membri ai aceleiași familii
+     */
+    private function is_family_member($current_user_id, $target_patient_id) {
+        // Verifică dacă există clasa Family Manager
+        if (!class_exists('Clinica_Family_Manager')) {
+            return false;
+        }
+        
+        $family_manager = new Clinica_Family_Manager();
+        
+        // Obține familia utilizatorului curent
+        $current_family = $family_manager->get_patient_family($current_user_id);
+        if (!$current_family) {
+            return false;
+        }
+        
+        // Obține familia pacientului țintă
+        $target_family = $family_manager->get_patient_family($target_patient_id);
+        if (!$target_family) {
+            return false;
+        }
+        
+        // Verifică dacă sunt din aceeași familie
+        return $current_family['id'] === $target_family['id'];
     }
 
     public function ajax_get_doctors_for_service() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_dashboard_nonce')) {
+        // Debug: log request data
+        error_log('AJAX get_doctors_for_service called with data: ' . print_r($_POST, true));
+        
+        // Verifică nonce-ul cu suport pentru multiple variante
+        $valid_nonces = array(
+            'clinica_dashboard_nonce',
+            'clinica_assistant_nonce',
+            'clinica_assistant_dashboard_nonce',
+            'clinica_receptionist_nonce',
+            'clinica_receptionist_dashboard_nonce',
+            'clinica_nonce',
+            'clinica_frontend_nonce'
+        );
+        
+        $nonce_valid = false;
+        $used_nonce = '';
+        foreach ($valid_nonces as $valid_nonce) {
+            if (wp_verify_nonce($_POST['nonce'], $valid_nonce)) {
+                $nonce_valid = true;
+                $used_nonce = $valid_nonce;
+                break;
+            }
+        }
+        
+        error_log('Nonce validation result: ' . ($nonce_valid ? 'VALID' : 'INVALID') . ' (used: ' . $used_nonce . ')');
+        
+        if (!$nonce_valid) {
             wp_send_json_error('Eroare de securitate');
         }
         if (!is_user_logged_in()) { wp_send_json_error('Neautorizat'); }
 
-        // Cache pentru doctori - 30 minute
+        // Cache pentru doctori - 30 minute (dezactivat temporar pentru debug)
         $cache_key = 'doctors_for_service';
+        wp_cache_delete($cache_key, 'clinica_doctors'); // Șterge cache-ul pentru debug
         $cached_doctors = wp_cache_get($cache_key, 'clinica_doctors');
         if ($cached_doctors !== false) {
+            error_log('Using cached doctors data');
             wp_send_json_success($cached_doctors);
         }
+        
+        error_log('Cache miss, loading fresh doctors data');
         
         $users = get_users(array('role__in' => array('clinica_doctor', 'clinica_manager')));
         $doctors = array();
@@ -3605,7 +3715,26 @@ class Clinica_Patient_Dashboard {
     }
 
     public function ajax_get_doctor_availability_days() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_dashboard_nonce')) {
+        // Verifică nonce-ul cu suport pentru multiple variante
+        $valid_nonces = array(
+            'clinica_dashboard_nonce',
+            'clinica_assistant_nonce',
+            'clinica_assistant_dashboard_nonce',
+            'clinica_receptionist_nonce',
+            'clinica_receptionist_dashboard_nonce',
+            'clinica_nonce',
+            'clinica_frontend_nonce'
+        );
+        
+        $nonce_valid = false;
+        foreach ($valid_nonces as $valid_nonce) {
+            if (wp_verify_nonce($_POST['nonce'], $valid_nonce)) {
+                $nonce_valid = true;
+                break;
+            }
+        }
+        
+        if (!$nonce_valid) {
             wp_send_json_error('Eroare de securitate');
         }
         $doctor_id = isset($_POST['doctor_id']) ? intval($_POST['doctor_id']) : 0;
@@ -3715,7 +3844,26 @@ class Clinica_Patient_Dashboard {
     }
 
     public function ajax_get_doctor_slots() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_dashboard_nonce')) {
+        // Verifică nonce-ul cu suport pentru multiple variante
+        $valid_nonces = array(
+            'clinica_dashboard_nonce',
+            'clinica_assistant_nonce',
+            'clinica_assistant_dashboard_nonce',
+            'clinica_receptionist_nonce',
+            'clinica_receptionist_dashboard_nonce',
+            'clinica_nonce',
+            'clinica_frontend_nonce'
+        );
+        
+        $nonce_valid = false;
+        foreach ($valid_nonces as $valid_nonce) {
+            if (wp_verify_nonce($_POST['nonce'], $valid_nonce)) {
+                $nonce_valid = true;
+                break;
+            }
+        }
+        
+        if (!$nonce_valid) {
             wp_send_json_error('Eroare de securitate');
         }
         $doctor_id = isset($_POST['doctor_id']) ? intval($_POST['doctor_id']) : 0;
@@ -3895,7 +4043,26 @@ class Clinica_Patient_Dashboard {
     }
 
     public function ajax_create_own_appointment() {
-        if (!wp_verify_nonce($_POST['nonce'], 'clinica_dashboard_nonce')) {
+        // Verifică nonce-ul cu suport pentru multiple variante
+        $valid_nonces = array(
+            'clinica_dashboard_nonce',
+            'clinica_assistant_nonce',
+            'clinica_assistant_dashboard_nonce',
+            'clinica_receptionist_nonce',
+            'clinica_receptionist_dashboard_nonce',
+            'clinica_nonce',
+            'clinica_frontend_nonce'
+        );
+        
+        $nonce_valid = false;
+        foreach ($valid_nonces as $valid_nonce) {
+            if (wp_verify_nonce($_POST['nonce'], $valid_nonce)) {
+                $nonce_valid = true;
+                break;
+            }
+        }
+        
+        if (!$nonce_valid) {
             wp_send_json_error('Eroare de securitate');
         }
         if (!Clinica_Patient_Permissions::can_create_own_appointments()) {
@@ -3910,8 +4077,18 @@ class Clinica_Patient_Dashboard {
         $duration = intval($_POST['duration']);
         $notes = isset($_POST['notes']) ? sanitize_textarea_field($_POST['notes']) : '';
 
-        if (get_current_user_id() !== $patient_id && !Clinica_Patient_Permissions::can_manage_appointments()) {
-            wp_send_json_error('Nu puteți crea programări pentru alt utilizator');
+        // Verifică dacă utilizatorul poate crea programări pentru acest pacient
+        $current_user_id = get_current_user_id();
+        if ($current_user_id !== $patient_id) {
+            // Verifică dacă are permisiuni de management
+            if (Clinica_Patient_Permissions::can_manage_appointments()) {
+                // Are permisiuni de management - poate crea pentru oricine
+            } else {
+                // Verifică dacă sunt membri ai aceleiași familii
+                if (!$this->is_family_member($current_user_id, $patient_id)) {
+                    wp_send_json_error('Nu puteți crea programări pentru acest utilizator. Doar pentru membrii familiei dvs.');
+                }
+            }
         }
 
         global $wpdb;

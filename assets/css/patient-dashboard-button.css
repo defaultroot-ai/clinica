@@ -1,0 +1,271 @@
+/**
+ * CSS pentru butonul Dashboard Pacient în dashboard-urile staff-ului
+ */
+
+/* Butonul principal Dashboard Pacient */
+.patient-dashboard-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.patient-dashboard-btn:hover {
+    background: linear-gradient(135deg, #218838, #1ea085);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.patient-dashboard-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+
+.patient-dashboard-btn i {
+    font-size: 16px;
+}
+
+/* Stilizare specifică pentru fiecare dashboard */
+
+/* Doctor Dashboard */
+.clinica-doctor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.clinica-doctor-header .header-left h1 {
+    margin: 0 0 8px 0;
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.clinica-doctor-header .header-left p {
+    margin: 0;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.clinica-doctor-header .header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.clinica-doctor-header .user-info {
+    text-align: right;
+}
+
+.clinica-doctor-header .user-name {
+    font-weight: 600;
+    color: white;
+    font-size: 16px;
+}
+
+.clinica-doctor-header .user-role {
+    color: white;
+    font-size: 14px;
+}
+
+/* Assistant Dashboard */
+.clinica-assistant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.clinica-assistant-header .header-left h1 {
+    margin: 0 0 8px 0;
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.clinica-assistant-header .header-left .subtitle {
+    margin: 0;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.clinica-assistant-header .header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.clinica-assistant-header .user-info {
+    text-align: right;
+}
+
+.clinica-assistant-header .user-name {
+    font-weight: 600;
+    color: white;
+    font-size: 16px;
+}
+
+.clinica-assistant-header .user-role {
+    color: white;
+    font-size: 14px;
+}
+
+/* Receptionist Dashboard */
+.clinica-receptionist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.clinica-receptionist-header .header-left h1 {
+    margin: 0 0 8px 0;
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.clinica-receptionist-header .header-left p {
+    margin: 0;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.clinica-receptionist-header .header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.clinica-receptionist-header .user-info {
+    text-align: right;
+}
+
+.clinica-receptionist-header .user-name {
+    font-weight: 600;
+    color: white;
+    font-size: 16px;
+}
+
+.clinica-receptionist-header .user-role {
+    color: white;
+    font-size: 14px;
+}
+
+/* Manager Dashboard */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.dashboard-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .clinica-doctor-header,
+    .clinica-assistant-header,
+    .clinica-receptionist-header,
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .clinica-doctor-header .header-right,
+    .clinica-assistant-header .header-right,
+    .clinica-receptionist-header .header-right,
+    .dashboard-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .patient-dashboard-btn {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .patient-dashboard-btn {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+    
+    .patient-dashboard-btn i {
+        font-size: 14px;
+    }
+}
+
+/* Animație pentru buton */
+@keyframes pulse-green {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+.patient-dashboard-btn:hover {
+    animation: pulse-green 1.5s infinite;
+}
+
+/* Stilizare pentru când butonul este focusat */
+.patient-dashboard-btn:focus {
+    outline: 2px solid #28a745;
+    outline-offset: 2px;
+}
+
+/* Stilizare pentru când butonul este disabled (dacă nu are rol de pacient) */
+.patient-dashboard-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.patient-dashboard-btn:disabled:hover {
+    background: #6c757d;
+    transform: none;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+    animation: none;
+}

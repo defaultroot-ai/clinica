@@ -54,8 +54,12 @@ class Clinica_Assistant_Dashboard {
 
     public function enqueue_assets() {
         if (is_page() && has_shortcode(get_post()->post_content, 'clinica_assistant_dashboard')) {
-            wp_enqueue_style('clinica-assistant-dashboard', plugin_dir_url(__FILE__) . '../assets/css/assistant-dashboard.css', array(), '1.0.0');
-            wp_enqueue_script('clinica-assistant-dashboard', plugin_dir_url(__FILE__) . '../assets/js/assistant-dashboard.js', array('jquery'), '1.0.0', true);
+            wp_enqueue_style('clinica-assistant-dashboard', plugin_dir_url(__FILE__) . '../assets/css/assistant-dashboard.css', array(), '1.2.0');
+            
+            // CSS pentru butonul Dashboard Pacient
+            wp_enqueue_style('clinica-patient-dashboard-button', plugin_dir_url(__FILE__) . '../assets/css/patient-dashboard-button.css', array(), '1.0.0');
+            
+            wp_enqueue_script('clinica-assistant-dashboard', plugin_dir_url(__FILE__) . '../assets/js/assistant-dashboard.js', array('jquery'), '1.0.1', true);
             
             // Include și CSS-ul pentru formularul de creare pacienți
             wp_enqueue_style('clinica-frontend', plugin_dir_url(__FILE__) . '../assets/css/frontend.css', array(), '1.0.0');
@@ -134,12 +138,19 @@ class Clinica_Assistant_Dashboard {
         <div class="clinica-assistant-dashboard">
             <div class="clinica-assistant-header">
                 <div class="header-left">
-                    <h1>Dashboard Asistent</h1>
+                    <h1>Portal Asistent</h1>
                     <p class="subtitle">Gestionare programări și pacienți</p>
                 </div>
                 <div class="header-right">
-                    <div class="user-name"><?php echo esc_html($display_name); ?></div>
-                    <div class="user-role"><?php echo esc_html($role_label); ?></div>
+                    <div class="user-info">
+                        <div class="user-name"><?php echo esc_html($display_name); ?></div>
+                        <div class="user-role"><?php echo esc_html($role_label); ?></div>
+                    </div>
+                    <?php if (in_array('clinica_patient', $user_roles)): ?>
+                    <a href="<?php echo esc_url(home_url('/clinica-patient-dashboard/')); ?>" class="patient-dashboard-btn">
+                        <i class="fa fa-user"></i> Cont pacient
+                    </a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -220,24 +231,24 @@ class Clinica_Assistant_Dashboard {
 
                     <div class="clinica-assistant-form">
                         <h3>Programări Următoare</h3>
-                        <table class="clinica-assistant-table">
-                            <thead>
-                                <tr>
-                                    <th>Ora</th>
-                                    <th>Pacient</th>
-                                    <th>Doctor</th>
-                                    <th>Serviciu</th>
-                                    <th>Status</th>
-                                    <th>Acțiuni</th>
-                                </tr>
-                            </thead>
-                            <tbody id="assistant-appointments-tbody">
+                        <div class="clinica-assistant-appointments-table">
+                            <div class="appointments-header">
+                                <div class="header-date">Data</div>
+                                <div class="header-day">Ziua</div>
+                                <div class="header-time">Interval</div>
+                                <div class="header-doctor">Doctor</div>
+                                <div class="header-patient">Pacient</div>
+                                <div class="header-service">Serviciu</div>
+                                <div class="header-status">Status</div>
+                                <div class="header-actions">Acțiuni</div>
+                            </div>
+                            <div class="clinica-assistant-appointments-list" id="assistant-appointments-tbody">
                                 <!-- Programările vor fi încărcate dinamic prin JavaScript -->
-                                <tr class="no-appointments" style="display: none;">
-                                    <td colspan="6" class="text-center">Se încarcă programările...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                <div class="no-appointments" style="display: none;">
+                                    <p>Se încarcă programările...</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -450,27 +461,64 @@ class Clinica_Assistant_Dashboard {
         // Obține programările reale din baza de date
         $appointments = $this->get_assistant_appointments();
         
-        $html = '';
+        $html = '<div class="clinica-assistant-appointments-table">';
+        $html .= '<div class="appointments-header">';
+        $html .= '<div class="header-date">Data</div>';
+        $html .= '<div class="header-day">Ziua</div>';
+        $html .= '<div class="header-time">Interval</div>';
+        $html .= '<div class="header-doctor">Doctor</div>';
+        $html .= '<div class="header-patient">Pacient</div>';
+        $html .= '<div class="header-service">Serviciu</div>';
+        $html .= '<div class="header-status">Status</div>';
+        $html .= '<div class="header-actions">Acțiuni</div>';
+        $html .= '</div>';
+        
         foreach ($appointments as $appointment) {
+            // Calculează intervalul de timp (ex: 13:30-13:45)
+            $start_time = substr($appointment['time'], 0, 5);
+            $duration = isset($appointment['duration']) ? (int)$appointment['duration'] : 30;
+            $end_time = $start_time ? date('H:i', strtotime($start_time) + 60 * $duration) : '';
+            $time_slot = $end_time ? $start_time . '-' . $end_time : $start_time;
+            
+            // Calculează ziua săptămânii
+            $day_names = array(
+                'Monday' => 'Luni',
+                'Tuesday' => 'Marți', 
+                'Wednesday' => 'Miercuri',
+                'Thursday' => 'Joi',
+                'Friday' => 'Vineri',
+                'Saturday' => 'Sâmbătă',
+                'Sunday' => 'Duminică'
+            );
+            $day_name = isset($appointment['date']) ? $day_names[date('l', strtotime($appointment['date']))] : '';
+            
+            // Formatează data
+            $formatted_date = isset($appointment['date']) ? date('d.m.Y', strtotime($appointment['date'])) : '';
+            
             $html .= '<div class="clinica-assistant-appointment-item">';
-            $html .= '<div class="appointment-time">' . esc_html($appointment['time']) . '</div>';
-            $html .= '<div class="appointment-patient">' . esc_html($appointment['patient_name']) . '</div>';
+            $html .= '<div class="appointment-date">' . esc_html($formatted_date) . '</div>';
+            $html .= '<div class="appointment-day">' . esc_html($day_name) . '</div>';
+            $html .= '<div class="appointment-time">' . esc_html($time_slot) . '</div>';
             $html .= '<div class="appointment-doctor">' . esc_html($appointment['doctor_name']) . '</div>';
+            $html .= '<div class="appointment-patient">' . esc_html($appointment['patient_name']) . '</div>';
             $html .= '<div class="appointment-type">' . esc_html($appointment['type']) . '</div>';
             $html .= '<div class="appointment-status status-' . esc_attr($appointment['status']) . '">' . esc_html($appointment['status']) . '</div>';
             $html .= '<div class="appointment-actions">';
-            $html .= '<button class="clinica-assistant-btn clinica-assistant-btn-secondary" onclick="editAppointment(' . $appointment['id'] . ')">Editează</button>';
             
-            // Afișează butonul "Mută" doar dacă statusul permite transferul
+            // Afișează butoanele doar dacă statusul permite modificări
             if (!in_array($appointment['status'], array('completed', 'cancelled', 'no_show'))) {
+                $html .= '<button class="clinica-assistant-btn clinica-assistant-btn-secondary" onclick="editAppointment(' . $appointment['id'] . ')">Editează</button>';
                 $html .= '<button class="clinica-assistant-btn clinica-assistant-btn-primary" onclick="openTransferModalFrontend(' . $appointment['id'] . ', ' . $appointment['doctor_id'] . ', ' . $appointment['patient_id'] . ', ' . $appointment['service_id'] . ', \'' . $appointment['date'] . '\', \'' . $appointment['time'] . '\', ' . $appointment['duration'] . ', \'' . esc_js($appointment['patient_name']) . '\', \'' . esc_js($appointment['doctor_name']) . '\', \'' . esc_js($appointment['type']) . '\')">Mută</button>';
             } else {
-                $html .= '<button class="clinica-assistant-btn clinica-assistant-btn-disabled" disabled title="Programarea nu poate fi mutată (status: ' . esc_attr($appointment['status']) . ')">Mută</button>';
+                // Pentru programările completed/cancelled/no_show, nu afișa niciun buton
+                $html .= '<span style="color: #999; font-size: 18px; font-weight: bold; display: flex; justify-content: center; align-items: center; width: 100%;">—</span>';
             }
             
             $html .= '</div>';
             $html .= '</div>';
         }
+        
+        $html .= '</div>'; // Închide clinica-assistant-appointments-table
         
         wp_send_json_success(array('html' => $html));
     }

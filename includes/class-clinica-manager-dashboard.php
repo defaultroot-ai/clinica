@@ -102,6 +102,9 @@ class Clinica_Manager_Dashboard {
                 
                 wp_enqueue_style('clinica-manager-dashboard', plugin_dir_url(__FILE__) . '../assets/css/manager-dashboard.css', array('dashicons'), '1.4.0.' . time());
                 wp_enqueue_style('clinica-manager-dashboard-new-features', plugin_dir_url(__FILE__) . '../assets/css/manager-dashboard-new-features.css', array('clinica-manager-dashboard'), '1.0.1.' . time());
+                
+                // CSS pentru butonul Dashboard Pacient
+                wp_enqueue_style('clinica-patient-dashboard-button', plugin_dir_url(__FILE__) . '../assets/css/patient-dashboard-button.css', array(), '1.0.0');
                 wp_enqueue_script('clinica-manager-dashboard', plugin_dir_url(__FILE__) . '../assets/js/manager-dashboard.js', array('jquery'), '1.3.0.' . time(), true);
                 
                 // Încarcă scripturile pentru editarea pacienților
@@ -176,6 +179,11 @@ class Clinica_Manager_Dashboard {
                     </div>
                 </div>
                 <div class="dashboard-actions">
+                    <?php if (in_array('clinica_patient', $current_user->roles)): ?>
+                    <a href="<?php echo esc_url(home_url('/clinica-patient-dashboard/')); ?>" class="patient-dashboard-btn">
+                        <i class="fa fa-user"></i> Cont pacient
+                    </a>
+                    <?php endif; ?>
                     <a href="<?php echo esc_url(wp_logout_url(home_url())); ?>" class="button button-secondary">Deconectare</a>
                 </div>
             </div>

@@ -71,6 +71,14 @@ class Clinica_Doctor_Dashboard {
                 time() // Forțează reîncărcarea cache-ului
             );
             
+            // CSS pentru butonul Dashboard Pacient
+            wp_enqueue_style(
+                'clinica-patient-dashboard-button', 
+                plugin_dir_url(__FILE__) . '../assets/css/patient-dashboard-button.css', 
+                array(), 
+                '1.0.0'
+            );
+            
             // JavaScript pentru dashboard-ul de medic
             wp_enqueue_script(
                 'clinica-doctor-dashboard', 
@@ -162,8 +170,17 @@ class Clinica_Doctor_Dashboard {
         ?>
         <div class="clinica-doctor-dashboard">
             <div class="clinica-doctor-header">
-                <h1>Dashboard Doctor</h1>
-                <p>Gestionare pacienți și dosare medicale</p>
+                <div class="header-left">
+                    <h1>Portal Doctor</h1>
+                    <p>Gestionare pacienți și dosare medicale</p>
+                </div>
+                <div class="header-right">
+                    <?php if (in_array('clinica_patient', $user->roles)): ?>
+                    <a href="<?php echo esc_url(home_url('/clinica-patient-dashboard/')); ?>" class="patient-dashboard-btn">
+                        <i class="fa fa-user"></i> Cont pacient
+                    </a>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div class="clinica-doctor-stats">
